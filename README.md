@@ -26,7 +26,7 @@ You can install an 'edge' version via git:
 To begin using the API, create a new `Graph` with an access token:
     
     >>> from facegraph import Graph
-    >>> g = Graph(ACCESS_TOKEN)
+    >>> g = Graph(ACCESS_TOKEN) #  Access token is optional.
     >>> g
     <Graph('https://graph.facebook.com/') at 0x...>
 

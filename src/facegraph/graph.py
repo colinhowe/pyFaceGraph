@@ -24,7 +24,7 @@ class Graph(object):
     To get started using the API, create a new `Graph` instance with an access
     token:
     
-        >>> g = Graph(access_token)
+        >>> g = Graph(access_token)  # Access token is optional.
         >>> g
         <Graph('https://graph.facebook.com/') at 0x...>
     
