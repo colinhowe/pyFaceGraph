@@ -122,7 +122,7 @@ class Graph(object):
     
     API_ROOT = URLObject.parse('https://graph.facebook.com/')
     
-    def __init__(self, access_token, **state):
+    def __init__(self, access_token=None, **state):
         self.access_token = access_token
         self.url = self.API_ROOT
         self.__dict__.update(state)
@@ -131,7 +131,7 @@ class Graph(object):
         return '<Graph(%r) at 0x%x>' % (str(self.url), id(self))
     
     def copy(self, **update):
-        return type(self)(self.access_token, **update)
+        return type(self)(access_token=self.access_token, **update)
     
     def __getitem__(self, item):
         return self.copy(url=(self.url / unicode(item)))
@@ -145,7 +145,8 @@ class Graph(object):
     def __call__(self, **params):
         """Read the current URL, and JSON-decode the results."""
         
-        params['access_token'] = self.access_token
+        if self.access_token:
+            params['access_token'] = self.access_token
         conn = urllib2.urlopen(self.url | params)
         try:
             data = json.load(conn)
@@ -163,7 +164,9 @@ class Graph(object):
         return self | ('ids', ','.join(map(str, ids)))
     
     def post(self, **params):
-        params['access_token'] = self.access_token
+        
+        if self.access_token:
+            params['access_token'] = self.access_token
         conn = urllib2.urlopen(self.url, data=urllib.urlencode(params))
         try:
             data = json.load(conn)
