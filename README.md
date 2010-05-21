@@ -72,8 +72,8 @@ You can fetch data by calling a `Graph` instance:
     Node({'about': '...', 'id': '1503223370'})
 
 This returns a `Node` object, which contains the retrieved data. `Node` is
-a subclass of `bunch.Bunch` [[1](http://pypi.python.org/pypi/bunch)], so you can
-access keys using either attribute or item syntax:
+a subclass of `bunch.Bunch` [[pypi](http://pypi.python.org/pypi/bunch)], so you
+can access keys using either attribute or item syntax:
 
     >>> about_me.id
     '1503223370'
