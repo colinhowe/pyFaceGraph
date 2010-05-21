@@ -4,13 +4,7 @@ import urllib
 import urllib2
 
 import bunch
-try:
-    import simplejson as json
-except ImportError:
-    try:
-        import json
-    except ImportError:
-        from django.utils import simplejson as json
+import simplejson as json
 from urlobject import URLObject
 
 
