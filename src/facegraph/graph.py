@@ -7,6 +7,8 @@ import bunch
 import simplejson as json
 from urlobject import URLObject
 
+__all__ = ['Graph']
+
 
 class Graph(object):
     
