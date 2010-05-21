@@ -82,6 +82,15 @@ class Graph(object):
         >>> about_me.hometown.name
         'London, United Kingdom'
     
+    Accessing non-existent attributes or items will return a `Graph` instance
+    corresponding to a child node. This `Graph` can then be called normally, to
+    retrieve the child node it represents:
+    
+        >>> about_me.home
+        <Graph('https://graph.facebook.com/me/home') at 0x...>
+        >>> about_me.home()
+        Node({'data': [...]})
+    
     See `Node`’s documentation for further examples.
     
     Creating, Updating and Deleting Nodes
