@@ -26,23 +26,6 @@ class FacebookOAuthView(djclsview.View):
     
     """
     
-    def authorize_url(self):
-        """The URL to redirect the client to for authorization."""
-        url = URLObject.parse('https://graph.facebook.com/oauth/authorize')
-        url |= ('client_id', self.client_id())
-        url |= ('redirect_uri', self.redirect_uri())
-        return url
-    
-    def access_token_url(self):
-        """The URL to retrieve to exchange a code for an access token."""
-        
-        url = URLObject.parse('https://graph.facebook.com/oauth/access_token')
-        url |= ('code', self.request.GET['code'])
-        url |= ('client_id', self.client_id())
-        url |= ('client_secret', self.client_secret())
-        url |= ('redirect_uri', self.redirect_uri())
-        return unicode(url)
-    
     def redirect_uri(self):
         """The URI to redirect the client to after successful authorization."""
         
@@ -89,6 +72,33 @@ class AuthorizeView(object):
     
     """
     
+    def authorize_url(self):
+        """The URL to redirect the client to for authorization."""
+        
+        url = URLObject.parse('https://graph.facebook.com/oauth/authorize')
+        url |= ('client_id', self.client_id())
+        url |= ('redirect_uri', self.redirect_uri())
+        
+        scope = self.scope()
+        if scope:
+            url |= ('scope', ','.join(scope))
+        
+        display = self.display()
+        if display:
+            url |= ('display', display)
+        
+        return url
+    
+    def scope(self):
+        """Return the list of additional permissions to request."""
+        
+        return []
+    
+    def display(self):
+        """The authorization dialog form factor. Default is 'page'."""
+        
+        return None  # default.
+    
     def __call__(self):
         return redirect(self.authorize_url())
 
@@ -128,3 +138,13 @@ class CallbackView(object):
         access_token_url = self.access_token_url()
         token_info = dict(cgi.parse_qsl(self.fetch_url(access_token_url)))
         return token_info['access_token']
+    
+    def access_token_url(self):
+        """The URL to retrieve to exchange a code for an access token."""
+        
+        url = URLObject.parse('https://graph.facebook.com/oauth/access_token')
+        url |= ('code', self.request.GET['code'])
+        url |= ('client_id', self.client_id())
+        url |= ('client_secret', self.client_secret())
+        url |= ('redirect_uri', self.redirect_uri())
+        return unicode(url)
