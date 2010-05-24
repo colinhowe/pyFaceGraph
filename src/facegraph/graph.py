@@ -206,6 +206,70 @@ class Graph(object):
 
 class Node(bunch.Bunch):
     
+    """
+    Represent a JSON dictionary result from the Facebook Graph API.
+    
+    Accessing Items
+    ---------------
+    
+    You can access items using either attribute or item syntax:
+    
+        >>> n = Node._new(None, {'a': 1, 'b': {'c': 3}})
+        >>> n.a
+        1
+        >>> n['a']
+        1
+        >>> n.b.c
+        3
+        >>> n['b'].c
+        3
+        >>> n.b['c']
+        3
+        >>> n['b']['c']
+    
+    The same applies to assignment, although this is not recommended. Under the
+    hood, this uses `bunch.Bunch` (<http://pypi.python.org/pypi/bunch>).
+    
+    Requesting Child Nodes
+    ----------------------
+    
+    Many types of node in the Graph API have child nodes accessible through
+    further API calls. For example:
+    
+        >>> g = Graph('access token')
+        >>> g.me
+        <Graph('https://graph.facebook.com/me') at 0x...>
+        >>> g.me()  # User
+        Node(...)
+        >>> g.me.feed
+        <Graph('https://graph.facebook.com/me/feed) at 0x...>
+        >>> g.me.feed()  # News Feed for current user
+        Node(...)
+    
+    `Node` makes it easier to access these child nodes using dynamic attribute
+    handling:
+    
+        >>> me = g.me()
+        >>> me.feed
+        <Graph('https://graph.facebook.com/me/feed') at 0x...>
+    
+    Accessing a non-existent attribute or item will return a new `Graph`
+    pointing to the child node, which you can then retrieve (as a `Node`) by
+    calling directly.
+    
+    Because `Node` uses dynamic attribute handling, accessing non-existent
+    attributes will still return a `Graph`. This can sometimes seem like more of
+    a bug than a feature. You’ll have to check for the presence of a key first,
+    to make sure what you're trying to access actually exists:
+    
+        def user_location(user_id):
+            user = graph[user_id]()
+            if 'location' in user:
+                return user.location
+            return False
+    
+    """
+    
     @classmethod
     def _new(cls, api, data):
         
