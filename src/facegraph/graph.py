@@ -1,5 +1,6 @@
 # -*- coding: utf-8 -*-
 
+import pprint
 import urllib
 import urllib2
 
@@ -223,7 +224,9 @@ class Node(bunch.Bunch):
         object.__setattr__(self, '_api', api)
     
     def __repr__(self):
-        return 'Node(%r)' % (dict(self),)
+        return 'Node(%r,\n%s)' % (
+            self._api,
+            indent(pprint.pformat(bunch.unbunchify(self)), prefix='     '))
     
     def __getitem__(self, item):
         try:
@@ -239,8 +242,18 @@ class Node(bunch.Bunch):
     
     @property
     def next_page(self):
+        """Shortcut for a `Graph` pointing to the next page."""
+        
         return self._api.copy(url=URLObject.parse(self.paging.next))
     
     @property
     def previous_page(self):
+        """Shortcut for a `Graph` pointing to the previous page."""
+        
         return self._api.copy(url=URLObject.parse(self.paging.next))
+
+
+def indent(string, prefix='    '):
+    """Indent each line of a string with a prefix (default is 4 spaces)."""
+    
+    return ''.join(prefix + line for line in string.splitlines(True))
