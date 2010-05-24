@@ -149,11 +149,8 @@ class Graph(object):
         
         if self.access_token:
             params['access_token'] = self.access_token
-        conn = urllib2.urlopen(self.url | params)
-        try:
-            data = json.load(conn)
-        finally:
-            conn.close()
+        
+        data = json.loads(self.fetch(self.url | params))
         
         if isinstance(data, dict):
             return Node(self, bunch.bunchify(data))
@@ -183,11 +180,8 @@ class Graph(object):
         
         if self.access_token:
             params['access_token'] = self.access_token
-        conn = urllib2.urlopen(self.url, data=urllib.urlencode(params))
-        try:
-            data = json.load(conn)
-        finally:
-            conn.close()
+        
+        data = json.loads(self.fetch(self.url, data=urllib.urlencode(params)))
         
         if isinstance(data, dict):
             return Node(self, bunch.bunchify(data))
@@ -197,6 +191,22 @@ class Graph(object):
         """Delete this resource. Sends a POST with `?method=delete`."""
         
         return self.post(method='delete')
+    
+    @staticmethod
+    def fetch(url, data=None):
+        
+        """
+        Fetch the specified URL, with optional form data; return a string.
+        
+        This method exists mainly for dependency injection purposes. By default
+        it uses urllib2; you may override it and use an alternative library.
+        """
+        
+        conn = urllib2.urlopen(url, data=data)
+        try:
+            return conn.read()
+        finally:
+            conn.close()
 
 
 class Node(bunch.Bunch):
