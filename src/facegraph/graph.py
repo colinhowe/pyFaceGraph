@@ -131,6 +131,8 @@ class Graph(object):
         return '<Graph(%r) at 0x%x>' % (str(self.url), id(self))
     
     def copy(self, **update):
+        """Copy this Graph, optionally overriding some attributes."""
+        
         return type(self)(access_token=self.access_token, **update)
     
     def __getitem__(self, item):
@@ -158,12 +160,26 @@ class Graph(object):
         return data
     
     def fields(self, *fields):
+        """Shortcut for `?fields=x,y,z`."""
+        
         return self | ('fields', ','.join(fields))
     
     def ids(self, *ids):
+        """Shortcut for `?ids=1,2,3`."""
+        
         return self | ('ids', ','.join(map(str, ids)))
     
     def post(self, **params):
+        
+        """
+        POST to this URL (with parameters); return the JSON-decoded result.
+        
+        Example:
+        
+            >>> Graph('ACCESS TOKEN').me.feed.post(message="Test.")
+            Node({'id': '...'})
+        
+        """
         
         if self.access_token:
             params['access_token'] = self.access_token
@@ -178,6 +194,8 @@ class Graph(object):
         return data
     
     def delete(self):
+        """Delete this resource. Sends a POST with `?method=delete`."""
+        
         return self.post(method='delete')
 
 
