@@ -151,10 +151,7 @@ class Graph(object):
             params['access_token'] = self.access_token
         
         data = json.loads(self.fetch(self.url | params))
-        
-        if isinstance(data, dict):
-            return Node(self, bunch.bunchify(data))
-        return data
+        return Node._new(self, data)
     
     def fields(self, *fields):
         """Shortcut for `?fields=x,y,z`."""
@@ -182,10 +179,7 @@ class Graph(object):
             params['access_token'] = self.access_token
         
         data = json.loads(self.fetch(self.url, data=urllib.urlencode(params)))
-        
-        if isinstance(data, dict):
-            return Node(self, bunch.bunchify(data))
-        return data
+        return Node._new(self, data)
     
     def delete(self):
         """Delete this resource. Sends a POST with `?method=delete`."""
@@ -210,6 +204,19 @@ class Graph(object):
 
 
 class Node(bunch.Bunch):
+    
+    @classmethod
+    def _new(cls, api, data):
+        
+        """
+        Create a new `Node` from a `Graph` and a JSON-decoded object.
+        
+        If the object is not a dictionary, it will be returned as-is.
+        """
+        
+        if isinstance(data, dict):
+            return cls(api, bunch.bunchify(data))
+        return data
     
     def __init__(self, api, data):
         super(Node, self).__init__(data)
