@@ -1,0 +1,11 @@
+{% extends "base.html" %}
+
+{% block body %}
+  {% if access_token %}
+    <p>Your access token:</p>
+    
+    <pre><code>{{ access_token }}</code></pre>
+  {% endif %}
+  
+  {% include "graphdevtools/token_form.html" %}
+{% endblock %}
