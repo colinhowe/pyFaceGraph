@@ -47,6 +47,10 @@ class FacebookOAuthView(djclsview.View):
         """Fetch a given URL; return a string representing the response body."""
         
         conn = urllib2.urlopen(url)
+        try:
+            return conn.read()
+        finally:
+            conn.close()
 
 
 class AuthorizeView(object):
