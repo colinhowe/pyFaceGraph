@@ -175,6 +175,16 @@ to these views.
   [fdv]: http://github.com/iplatform/pyFaceGraph/blob/master/src/facegraph/django/views.py
 
 
+#### Example
+
+Take a look at the example project in `test/graphdevtools`, which shows how to
+construct an app that interfaces with Facebook (and provides a dashboard for
+generating access tokens with varying permissions). You’ll need to create
+`local_settings.py` in that directory and define `SECRET_KEY`,
+`FACEBOOK_CLIENT_ID` and `FACEBOOK_CLIENT_SECRET` (for the latter two you need
+to register a Facebook application).
+
+
 ### Middleware
 
 The provided `FacebookGraphMiddleware` will attach a `facegraph.Graph` instance
