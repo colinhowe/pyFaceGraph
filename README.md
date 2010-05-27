@@ -169,8 +169,8 @@ Graph API on behalf of a Facebook user.
     access token. Suggestions include saving the access token to the database,
     or storing it in `request.session`.
 
-See the source of [`facegraph.django.views`][fdv] for the ultimate reference
-guide to these views.
+See the source of [facegraph.django.views][fdv] for the ultimate reference guide
+to these views.
 
   [fdv]: http://github.com/iplatform/pyFaceGraph/blob/master/src/facegraph/django/views.py
 
