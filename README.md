@@ -130,6 +130,78 @@ method is a helpful shortcut:
     True
 
 
+## Django
+
+pyFaceGraph comes with basic support for building client applications in Django.
+At the moment, this consists of:
+
+*   Abstract class-based views for OAuth 2.0 authorization
+*   Abstract middleware to attach `Graph` instances to each request
+
+
+### OAuth
+
+pyFaceGraph defines two abstract class-based views (using [django-clsview][])
+and a mixin; these help your app obtain OAuth 2.0 acess tokens to access the
+Graph API on behalf of a Facebook user.
+
+  [django-clsview]: http://github.com/zacharyvoase/django-clsview
+
+*   `FacebookOAuthView`: Defines some common methods useful to all
+    Facebook-related CBVs. Should be used as an inherited ‘mixin’, i.e.:
+    
+        class Callback(CallbackView, FacebookOAuthView):
+            pass
+    
+    Examples of methods implemented here are `redirect_uri()` (which must be the
+    same for both the authorize and callback views), `client_id()` and
+    `client_secret()` and `fetch_url()`
+
+*   `AuthorizeView`: Acts solely to redirect users to Facebook for
+    authorization. You can override `authorize_url()` to change the URL which
+    the user is redirected to. `scope()` and `display()` are two shortcuts for
+    the Facebook-specific parameters, which you might need to alter for your
+    requirements.
+
+*   `CallbackView`: The view the user is redirected back to from Facebook, upon
+    successful authorization. It’s up to you to write the body of this (by
+    defining `__call__()`), but you can call `get_access_token()` to fetch the
+    access token. Suggestions include saving the access token to the database,
+    or storing it in `request.session`.
+
+See the source of [`facegraph.django.views`][fdv] for the ultimate reference
+guide to these views.
+
+  [fdv]: http://github.com/iplatform/pyFaceGraph/blob/master/src/facegraph/django/views.py
+
+
+### Middleware
+
+The provided `FacebookGraphMiddleware` will attach a `facegraph.Graph` instance
+to each request, accessible as `request.graph`. You will need to subclass this
+middleware to define your own method of fetching the access token. For example:
+
+    ## myapp/middleware.py:
+    
+    from facegraph.django.middleware import FacebookGraphMiddleware
+    
+    class GraphMiddleware(FacebookGraphMiddleware):
+        def access_token(self, request):
+            return request.session.get('access_token')
+    
+    ## settings.py:
+    
+    MIDDLEWARE_CLASSES = (
+      # ... 
+      'myapp.middleware.GraphMiddleware',
+      # ...
+    )
+
+Note that this will still attach a `Graph` even if the access token is `None`.
+To check for authentication, just use `if request.graph.access_token:` in your
+view code.
+
+
 ## (Un)license
 
 This is free and unencumbered software released into the public domain.
