@@ -145,6 +145,9 @@ class Graph(object):
     def __or__(self, params):
         return self.copy(url=(self.url | params))
     
+    def __and__(self, params):
+        return self.copy(url=(self.url & params))
+    
     def __call__(self, **params):
         """Read the current URL, and JSON-decode the results."""
         
