@@ -2,4 +2,5 @@
 
 __version__ = '0.0.3'
 
+from facegraph.fql import FQL
 from facegraph.graph import Graph
