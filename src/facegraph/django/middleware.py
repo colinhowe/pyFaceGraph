@@ -75,3 +75,13 @@ class FacebookCanvasMiddleware(object):
         """Semi-abstract method to retrieve the FB app secret for a request."""
         
         return getattr(settings, 'FACEBOOK_APP_SECRET', None)
+
+
+class FacebookCanvasGraphMiddleware(FacebookGraphMiddleware):
+    
+    """A FacebookGraphMiddleware that uses the `signed_request`."""
+    
+    def access_token(self, request):
+        """Retrieve the access token from `request.fbrequest`."""
+        
+        return request.fbrequest.get('oauth_token')
