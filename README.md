@@ -130,6 +130,27 @@ method is a helpful shortcut:
     True
 
 
+## Canvas Applications
+
+Facebook is rolling out support for OAuth 2.0 in canvas applications with the
+new `signed_request` parameter; you can read about it [here][signed_request].
+
+  [signed_request]: http://developers.facebook.com/docs/authentication/canvas
+
+pyFaceGraph comes with a simple function for verifying and decoding this
+parameter:
+
+    >>> from facegraph import decode_signed_request, InvalidSignature
+    
+    >>> decode_signed_request(APP_SECRET, GET['signed_request'])
+    {'0': 'payload', 'algorithm': 'HMAC-SHA256'}
+    
+    >>> decode_signed_request('wrong-secret', GET['signed_request'])
+    Traceback (most recent call last):
+        ...
+    InvalidSignature
+
+
 ## Django
 
 pyFaceGraph comes with basic support for building client applications in Django.
