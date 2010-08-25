@@ -26,7 +26,19 @@ class FacebookGraphMiddleware(object):
         
         class MyGraphSessionMiddleware(GraphSessionMiddleware):
             def graph_for_request(self, request):
-                return MyGraph(self.access_token(request))
+                access_token = self.access_token(request)
+                if access_token:
+                    return MyGraph(access_token)
+                return MyGraph()
+    
+    Note that if `access_token()` returns a false value (e.g. `None`), an
+    unauthenticated `Graph()` instance will still be attached to the request.
+    You can check this in your views like so:
+    
+        if request.graph.access_token:
+            # Auth'd
+        else:
+            # Not auth'd
     
     """
     
@@ -36,7 +48,10 @@ class FacebookGraphMiddleware(object):
     def graph_for_request(self, request):
         """Return the `Graph` for a given request."""
         
-        return Graph(self.access_token(request))
+        access_token = self.access_token(request)
+        if access_token:
+            return Graph(access_token)
+        return Graph()
     
     def access_token(self, request):
         """Abstract method to retrieve the access token for a given request."""
