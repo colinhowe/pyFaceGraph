@@ -1,6 +1,9 @@
 # -*- coding: utf-8 -*-
 
-from facegraph import Graph
+from django.conf import settings
+
+from facegraph import signature
+from facegraph import Graph, decode_signed_request
 
 
 class FacebookGraphMiddleware(object):
@@ -39,3 +42,36 @@ class FacebookGraphMiddleware(object):
         """Abstract method to retrieve the access token for a given request."""
         
         raise NotImplementedError
+
+
+class FacebookCanvasMiddleware(object):
+    
+    """
+    Middleware to decode `signed_request` parameters for canvas applications.
+    
+    If verification is successful, the decoded value is attached to each request
+    as `request.fbrequest`. If either: `signed_request` is not present;
+    `app_secret()` returns a false value; or verification fails,
+    `request.fbrequest` will be set to `None`.
+    
+    By default, this middleware uses `settings.FACEBOOK_APP_SECRET` as the
+    application secret, but you can subclass and override the `app_secret()`
+    method to specify your own.
+    """
+    
+    def process_request(self, request):
+        app_secret = self.app_secret(request)
+        raw_fbrequest = request.GET.get('signed_request', None)
+        if not (app_secret and raw_fbrequest):
+            request.fbrequest = None
+            return
+        
+        try:
+            request.fbrequest = decode_signed_request(app_secret, raw_fbrequest)
+        except (signature.InvalidSignature, signature.UnknownSignatureAlgorithm):
+            request.fbrequest = None
+    
+    def app_secret(self, request):
+        """Semi-abstract method to retrieve the FB app secret for a request."""
+        
+        return getattr(settings, 'FACEBOOK_APP_SECRET', None)
