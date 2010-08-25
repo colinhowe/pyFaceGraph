@@ -232,6 +232,42 @@ Note that this will still attach a `Graph` even if the access token is `None`.
 To check for authentication, just use `if request.graph.access_token:` in your
 view code.
 
+There is also a piece of middleware for canvas applications:
+`FacebookCanvasMiddleware` will verify and decode Facebook’s new
+`signed_request` parameter for each request, and attach the value as
+`request.fbrequest`. By default, `settings.FACEBOOK_APP_SECRET` will be used as
+the application secret for signature verification, but you can subclass the
+middleware and override the `app_secret()` method to modify this behavior:
+
+    ## myapp/middleware.py:
+    
+    from django.conf import settings
+    from facegraph.django.middleware import FacebookCanvasMiddleware
+    
+    class CanvasMiddleware(FacebookCanvasMiddleware):
+        def app_secret(self, request):
+            return settings.MY_FACEBOOK_APP_SECRET
+    
+    ## settings.py:
+    
+    MIDDLEWARE_CLASSES = (
+      # ... 
+      'myapp.middleware.CanvasMiddleware',
+      # ...
+    )
+
+Finally, `FacebookCanvasGraphMiddleware` is a subclass of
+`FacebookGraphMiddleware` which will use the signed request as the source of the
+access token; no subclassing is necessary, just place it *after*
+`CanvasMiddleware` in `MIDDLEWARE_CLASSES`:
+
+    MIDDLEWARE_CLASSES = (
+      # ... 
+      'myapp.middleware.CanvasMiddleware',
+      'facegraph.django.middleware.FacebookCanvasGraphMiddleware',
+      # ...
+    )
+
 
 ## (Un)license
 
