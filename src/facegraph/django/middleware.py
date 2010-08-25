@@ -99,4 +99,5 @@ class FacebookCanvasGraphMiddleware(FacebookGraphMiddleware):
     def access_token(self, request):
         """Retrieve the access token from `request.fbrequest`."""
         
-        return request.fbrequest.get('oauth_token')
+        if request.fbrequest:
+            return request.fbrequest.get('oauth_token')
