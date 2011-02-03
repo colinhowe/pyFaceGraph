@@ -1,11 +1,13 @@
 # -*- coding: utf-8 -*-
 
+import httplib
 import pprint
 import urllib
 import urllib2
 
 import bunch
 import simplejson as json
+from functools import partial
 from urlobject import URLObject
 
 __all__ = ['Graph']
@@ -153,7 +155,6 @@ class Graph(object):
         
         if self.access_token:
             params['access_token'] = self.access_token
-        
         data = json.loads(self.fetch(self.url | params))
         return Node._new(self, data)
     
@@ -177,13 +178,67 @@ class Graph(object):
             >>> Graph('ACCESS TOKEN').me.feed.post(message="Test.")
             Node({'id': '...'})
         
+        Some methods allow file attachments so uses MIME request to send those through.
+        Must pass in a file object as 'file'
         """
         
         if self.access_token:
             params['access_token'] = self.access_token
         
-        data = json.loads(self.fetch(self.url, data=urllib.urlencode(params)))
+        if self.url.path.split('/')[-1] in ['photos']:
+            fetch = partial(self.post_mime, self.url, **params)
+        else:
+            fetch = partial(self.fetch, self.url, data=urllib.urlencode(params))
+        
+        data = json.loads(fetch())
         return Node._new(self, data)
+    
+    @staticmethod
+    def post_mime(url, **kwargs):
+        
+        body = []
+        crlf = '\r\n'
+        boundary = "graphBoundary"
+        
+        # UTF8 params
+        utf8_kwargs = dict([(k, v.encode('UTF-8')) for (k,v) in kwargs.iteritems() if k != 'file'])
+        
+        # Add args
+        for (k,v) in utf8_kwargs.iteritems():
+            body.append("--"+boundary)
+            body.append('Content-Disposition: form-data; name="%s"' % k) 
+            body.append('')
+            body.append(str(v))
+        
+        # Add raw data
+        file = kwargs.get('file')
+        if file:
+            file.open()
+            data = file.read()
+            file.close()
+            
+            body.append("--"+boundary)
+            body.append('Content-Disposition: form-data; filename="facegraphfile.png"')
+            body.append('')
+            body.append(data)
+            
+            body.append("--"+boundary+"--")
+            body.append('')
+        
+        body = crlf.join(body)
+        
+        # Post to server
+        r = httplib.HTTPSConnection(url.host)
+        headers = {'Content-Type': 'multipart/form-data; boundary=%s' % boundary,
+                   'Content-Length': str(len(body)),
+                   'MIME-Version': '1.0'}
+        
+        r.request('POST', url.path, body, headers)
+        
+        try:
+            return r.getresponse().read()
+        finally:
+            r.close()
     
     def delete(self):
         """Delete this resource. Sends a POST with `?method=delete`."""
@@ -199,13 +254,11 @@ class Graph(object):
         This method exists mainly for dependency injection purposes. By default
         it uses urllib2; you may override it and use an alternative library.
         """
-        
         conn = urllib2.urlopen(url, data=data)
         try:
             return conn.read()
         finally:
             conn.close()
-
 
 class Node(bunch.Bunch):
     
