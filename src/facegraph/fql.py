@@ -5,7 +5,7 @@ import urllib2
 import bunch
 import simplejson as json
 from urlobject import URLObject
-
+from graph import GraphException
 
 class FQL(object):
     
@@ -108,7 +108,14 @@ class FQL(object):
     
     @classmethod
     def fetch_json(cls, url, data=None):
-        return bunch.bunchify(json.loads(cls.fetch(url, data=data)))
+        response = json.loads(cls.fetch(url, data=data))
+        if isinstance(response, dict):
+            if response.get("error_msg"):
+                code = response.get("error_code")
+                msg = response.get("error_msg")
+                args = response.get("request_args")
+                raise GraphException(code, msg, args=args)
+        return bunch.bunchify(response)
     
     @staticmethod
     def fetch(url, data=None):

@@ -2,6 +2,7 @@
 
 import httplib
 import pprint
+import re
 import urllib
 import urllib2
 
@@ -9,6 +10,9 @@ import bunch
 import simplejson as json
 from functools import partial
 from urlobject import URLObject
+
+p = "^\(#(\d+)\)"
+code_re = re.compile(p)
 
 __all__ = ['Graph']
 
@@ -193,6 +197,16 @@ class Graph(object):
         data = json.loads(fetch())
         return Node._new(self, data)
     
+    def post_file(self, file, **params):
+        
+        if self.access_token:
+            params['access_token'] = self.access_token
+        params['file'] = file
+            
+        data = json.loads(self.post_mime(self.url, **params))
+        
+        return Node._new(self, data)
+    
     @staticmethod
     def post_mime(url, **kwargs):
         
@@ -254,11 +268,14 @@ class Graph(object):
         This method exists mainly for dependency injection purposes. By default
         it uses urllib2; you may override it and use an alternative library.
         """
-        conn = urllib2.urlopen(url, data=data)
+        conn = None
         try:
+            conn = urllib2.urlopen(url, data=data)
             return conn.read()
+        except urllib2.HTTPError, e:
+            return e.fp.read()        
         finally:
-            conn.close()
+            conn and conn.close()
 
 class Node(bunch.Bunch):
     
@@ -336,6 +353,15 @@ class Node(bunch.Bunch):
         """
         
         if isinstance(data, dict):
+            if data.get("error"):
+                code = data["error"].get("code")
+                msg = data["error"]["message"]
+                if code is None:
+                    try:
+                        code = int(code_re.match(msg).group(1))
+                    except AttributeError:
+                        pass
+                raise GraphException(code, msg)
             return cls(api, bunch.bunchify(data))
         return data
     
@@ -371,7 +397,20 @@ class Node(bunch.Bunch):
         """Shortcut for a `Graph` pointing to the previous page."""
         
         return self._api.copy(url=URLObject.parse(self.paging.next))
-
+    
+class GraphException(Exception):
+    def __init__(self, code, message, args=None):
+        Exception.__init__(self)
+        if args is not None:
+            self.args = args
+        self.message = message
+        self.code = code
+        
+    def __repr__(self):
+        return str(self)
+    
+    def __str__(self):
+        return "%s: %s\n%s" % (self.code, self.message, self.args)
 
 def indent(string, prefix='    '):
     """Indent each line of a string with a prefix (default is 4 spaces)."""
