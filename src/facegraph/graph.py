@@ -192,6 +192,7 @@ class Graph(object):
         if self.url.path.split('/')[-1] in ['photos']:
             fetch = partial(self.post_mime, self.url, **params)
         else:
+            params = dict([(k, v.encode('UTF-8')) for (k,v) in params.iteritems()])
             fetch = partial(self.fetch, self.url, data=urllib.urlencode(params))
         
         data = json.loads(fetch())
