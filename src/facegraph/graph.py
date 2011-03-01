@@ -192,7 +192,7 @@ class Graph(object):
         if self.url.path.split('/')[-1] in ['photos']:
             fetch = partial(self.post_mime, self.url, **params)
         else:
-            params = dict([(k, v.encode('UTF-8')) for (k,v) in params.iteritems()])
+            params = dict([(k, v.encode('UTF-8')) for (k,v) in params.iteritems() if v is not None])
             fetch = partial(self.fetch, self.url, data=urllib.urlencode(params))
         
         data = json.loads(fetch())
@@ -216,7 +216,7 @@ class Graph(object):
         boundary = "graphBoundary"
         
         # UTF8 params
-        utf8_kwargs = dict([(k, v.encode('UTF-8')) for (k,v) in kwargs.iteritems() if k != 'file'])
+        utf8_kwargs = dict([(k, v.encode('UTF-8')) for (k,v) in kwargs.iteritems() if k != 'file' and v is not None])
         
         # Add args
         for (k,v) in utf8_kwargs.iteritems():
