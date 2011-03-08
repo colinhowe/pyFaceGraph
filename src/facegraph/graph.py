@@ -129,8 +129,9 @@ class Graph(object):
     
     API_ROOT = URLObject.parse('https://graph.facebook.com/')
     
-    def __init__(self, access_token=None, **state):
+    def __init__(self, access_token=None, err_handler=None, **state):
         self.access_token = access_token
+        self.err_handler = err_handler
         self.url = self.API_ROOT
         self.__dict__.update(state)
     
@@ -140,7 +141,7 @@ class Graph(object):
     def copy(self, **update):
         """Copy this Graph, optionally overriding some attributes."""
         
-        return type(self)(access_token=self.access_token, **update)
+        return type(self)(access_token=self.access_token, err_handler=self.err_handler, **update)
     
     def __getitem__(self, item):
         if isinstance(item, slice):
@@ -164,7 +165,7 @@ class Graph(object):
         if self.access_token:
             params['access_token'] = self.access_token
         data = json.loads(self.fetch(self.url | params))
-        return Node._new(self, data)
+        return self.node(data)
     
     def fields(self, *fields):
         """Shortcut for `?fields=x,y,z`."""
@@ -175,6 +176,9 @@ class Graph(object):
         """Shortcut for `?ids=1,2,3`."""
         
         return self | ('ids', ','.join(map(str, ids)))
+    
+    def node(self, data):
+        return Node._new(self, data, err_handler=self.err_handler)
     
     def post(self, **params):
         
@@ -200,7 +204,7 @@ class Graph(object):
             fetch = partial(self.fetch, self.url, data=urllib.urlencode(params))
         
         data = json.loads(fetch())
-        return Node._new(self, data)
+        return self.node(data)
     
     def post_file(self, file, **params):
         
@@ -210,7 +214,7 @@ class Graph(object):
             
         data = json.loads(self.post_mime(self.url, **params))
         
-        return Node._new(self, data)
+        return self.node(data)
     
     @staticmethod
     def post_mime(url, **kwargs):
@@ -349,7 +353,7 @@ class Node(bunch.Bunch):
     """
     
     @classmethod
-    def _new(cls, api, data):
+    def _new(cls, api, data, err_handler=None):
         
         """
         Create a new `Node` from a `Graph` and a JSON-decoded object.
@@ -366,7 +370,11 @@ class Node(bunch.Bunch):
                         code = int(code_re.match(msg).group(1))
                     except AttributeError:
                         pass
-                raise GraphException(code, msg)
+                e = GraphException(code, msg)
+                if err_handler:
+                    err_handler(e=e)
+                else:
+                    raise e
             return cls(api, bunch.bunchify(data))
         return data
     
