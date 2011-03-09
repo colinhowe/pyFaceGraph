@@ -282,6 +282,11 @@ class Graph(object):
         finally:
             conn and conn.close()
 
+    def __sentry__(self):
+        '''Transform the graph object into something that sentry can 
+        understand'''
+        return "Graph(%s, %s)" % (self.url, str(self.__dict__))
+
 class Node(bunch.Bunch):
     
     """
