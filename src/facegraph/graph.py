@@ -428,7 +428,7 @@ class GraphException(Exception):
         return str(self)
     
     def __str__(self):
-        return "%s: %s\n%s" % (self.code, self.message, self.args)
+        return "%s: %s %s" % (self.code, self.message, self.args)
 
 def indent(string, prefix='    '):
     """Indent each line of a string with a prefix (default is 4 spaces)."""
