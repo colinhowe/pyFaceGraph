@@ -135,9 +135,7 @@ class Graph(object):
         self.err_handler = err_handler
         self.url = self.API_ROOT
         self.__dict__.update(state)
-        self.open_kwargs = {}
-        if timeout:
-            self.open_kwargs['timeout'] = timeout
+        self.timeout = timeout
     
     def __repr__(self):
         return '<Graph(%r) at 0x%x>' % (str(self.url), id(self))
@@ -168,7 +166,7 @@ class Graph(object):
         
         if self.access_token:
             params['access_token'] = self.access_token
-        data = json.loads(self.fetch(self.url | params))
+        data = json.loads(self.fetch(self.url | params, timeout=self.timeout))
         return self.node(data)
     
     def fields(self, *fields):
@@ -202,10 +200,11 @@ class Graph(object):
             params['access_token'] = self.access_token
         
         if self.url.path.split('/')[-1] in ['photos']:
+            params['timeout'] = self.timeout
             fetch = partial(self.post_mime, self.url, **params)
         else:
             params = dict([(k, v.encode('UTF-8')) for (k,v) in params.iteritems() if v is not None])
-            fetch = partial(self.fetch, self.url, data=urllib.urlencode(params))
+            fetch = partial(self.fetch, self.url, timeout=self.timeout, data=urllib.urlencode(params))
         
         data = json.loads(fetch())
         return self.node(data)
@@ -216,12 +215,13 @@ class Graph(object):
             params['access_token'] = self.access_token
         params['file'] = file
             
+        params['timeout'] = self.timeout
         data = json.loads(self.post_mime(self.url, **params))
         
         return self.node(data)
     
     @staticmethod
-    def post_mime(url, **kwargs):
+    def post_mime(url, timeout=DEFAULT_TIMEOUT, **kwargs):
         
         body = []
         crlf = '\r\n'
@@ -255,7 +255,10 @@ class Graph(object):
         body = crlf.join(body)
         
         # Post to server
-        r = httplib.HTTPSConnection(url.host, **self.open_kwargs)
+        kwargs = {}
+        if timeout:
+            kwargs = {'timeout': timeout}
+        r = httplib.HTTPSConnection(url.host, **kwargs)
         headers = {'Content-Type': 'multipart/form-data; boundary=%s' % boundary,
                    'Content-Length': str(len(body)),
                    'MIME-Version': '1.0'}
@@ -273,7 +276,7 @@ class Graph(object):
         return self.post(method='delete')
     
     @staticmethod
-    def fetch(url, data=None):
+    def fetch(url, data=None, timeout=DEFAULT_TIMEOUT):
         
         """
         Fetch the specified URL, with optional form data; return a string.
@@ -283,7 +286,10 @@ class Graph(object):
         """
         conn = None
         try:
-            conn = urllib2.urlopen(url, data=data, **self.open_kwargs)
+            kwargs = {}
+            if timeout:
+                kwargs = {'timeout': timeout}
+            conn = urllib2.urlopen(url, data=data, **kwargs)
             return conn.read()
         except urllib2.HTTPError, e:
             return e.fp.read()        
