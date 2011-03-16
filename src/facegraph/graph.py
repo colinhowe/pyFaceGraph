@@ -128,11 +128,15 @@ class Graph(object):
     """
     
     API_ROOT = URLObject.parse('https://graph.facebook.com/')
+    DEFAULT_TIMEOUT = 0 # No timeout as default
     
-    def __init__(self, access_token=None, **state):
+    def __init__(self, access_token=None, timeout=DEFAULT_TIMEOUT, **state):
         self.access_token = access_token
         self.url = self.API_ROOT
         self.__dict__.update(state)
+        self.open_kwargs = {}
+        if timeout:
+            self.open_kwargs['timeout'] = timeout
     
     def __repr__(self):
         return '<Graph(%r) at 0x%x>' % (str(self.url), id(self))
@@ -247,7 +251,7 @@ class Graph(object):
         body = crlf.join(body)
         
         # Post to server
-        r = httplib.HTTPSConnection(url.host)
+        r = httplib.HTTPSConnection(url.host, **self.open_kwargs)
         headers = {'Content-Type': 'multipart/form-data; boundary=%s' % boundary,
                    'Content-Length': str(len(body)),
                    'MIME-Version': '1.0'}
@@ -275,7 +279,7 @@ class Graph(object):
         """
         conn = None
         try:
-            conn = urllib2.urlopen(url, data=data)
+            conn = urllib2.urlopen(url, data=data, **self.open_kwargs)
             return conn.read()
         except urllib2.HTTPError, e:
             return e.fp.read()        
