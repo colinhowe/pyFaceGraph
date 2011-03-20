@@ -1,10 +1,8 @@
 # -*- coding: utf-8 -*-
 
-import httplib
 import pprint
 import re
 import urllib
-import urllib2
 
 import bunch
 import simplejson as json
@@ -129,10 +127,16 @@ class Graph(object):
     
     API_ROOT = URLObject.parse('https://graph.facebook.com/')
     
-    def __init__(self, access_token=None, **state):
+    def __init__(self, access_token=None, urllib2=None, httplib=None, **state):
         self.access_token = access_token
         self.url = self.API_ROOT
         self.__dict__.update(state)
+        if urllib2 is None:
+            import urllib2
+        self.urllib2 = urllib2
+        if httplib is None:
+            import httplib
+        self.httplib = httplib
     
     def __repr__(self):
         return '<Graph(%r) at 0x%x>' % (str(self.url), id(self))
@@ -165,6 +169,9 @@ class Graph(object):
             params['access_token'] = self.access_token
         data = json.loads(self.fetch(self.url | params))
         return Node._new(self, data)
+
+    def __sentry__(self):
+        return 'Graph(url: %s, params: %s)' % (self.url, repr(self.__dict__))
     
     def fields(self, *fields):
         """Shortcut for `?fields=x,y,z`."""
@@ -247,7 +254,7 @@ class Graph(object):
         body = crlf.join(body)
         
         # Post to server
-        r = httplib.HTTPSConnection(url.host)
+        r = self.httplib.HTTPSConnection(url.host)
         headers = {'Content-Type': 'multipart/form-data; boundary=%s' % boundary,
                    'Content-Length': str(len(body)),
                    'MIME-Version': '1.0'}
@@ -275,9 +282,9 @@ class Graph(object):
         """
         conn = None
         try:
-            conn = urllib2.urlopen(url, data=data)
+            conn = self.urllib2.urlopen(url, data=data)
             return conn.read()
-        except urllib2.HTTPError, e:
+        except self.urllib2.HTTPError, e:
             return e.fp.read()        
         finally:
             conn and conn.close()
