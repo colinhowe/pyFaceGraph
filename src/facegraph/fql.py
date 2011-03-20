@@ -47,8 +47,9 @@ class FQL(object):
     
     ENDPOINT = URLObject.parse('https://api.facebook.com/method/')
     
-    def __init__(self, access_token=None):
+    def __init__(self, access_token=None, err_handler=None):
         self.access_token = access_token
+        self.err_handler = err_handler
     
     def __call__(self, query, **params):
         
@@ -114,7 +115,11 @@ class FQL(object):
                 code = response.get("error_code")
                 msg = response.get("error_msg")
                 args = response.get("request_args")
-                raise GraphException(code, msg, args=args)
+                e = GraphException(code, msg, args=args)
+                if self.err_handler:
+                    self.err_handler(e)
+                else:
+                    raise e
         return bunch.bunchify(response)
     
     @staticmethod
