@@ -173,7 +173,7 @@ class Graph(object):
         if self.access_token:
             params['access_token'] = self.access_token
         data = json.loads(self.fetch(self.url | params, timeout=self.timeout, urllib2=self.urllib2))
-        return self.node(data)
+        return self.node(data, params)
 
     def __sentry__(self):
         return 'Graph(url: %s, params: %s)' % (self.url, repr(self.__dict__))
@@ -188,8 +188,8 @@ class Graph(object):
         
         return self | ('ids', ','.join(map(str, ids)))
     
-    def node(self, data):
-        return Node._new(self, data, err_handler=self.err_handler)
+    def node(self, data, params):
+        return Node._new(self, data, err_handler=self.err_handler, params=params)
     
     def post(self, **params):
         
@@ -220,7 +220,7 @@ class Graph(object):
                     timeout=self.timeout, data=urllib.urlencode(params))
         
         data = json.loads(fetch())
-        return self.node(data)
+        return self.node(data, params)
     
     def post_file(self, file, **params):
         
@@ -231,7 +231,7 @@ class Graph(object):
         params['httplib'] = self.httplib
         data = json.loads(self.post_mime(self.url, **params))
         
-        return self.node(data)
+        return self.node(data, params)
     
     @staticmethod
     def post_mime(url, httplib=default_httplib, timeout=DEFAULT_TIMEOUT, **kwargs):
@@ -381,7 +381,7 @@ class Node(bunch.Bunch):
     """
     
     @classmethod
-    def _new(cls, api, data, err_handler=None):
+    def _new(cls, api, data, err_handler=None, params=None):
         
         """
         Create a new `Node` from a `Graph` and a JSON-decoded object.
@@ -398,7 +398,7 @@ class Node(bunch.Bunch):
                         code = int(code_re.match(msg).group(1))
                     except AttributeError:
                         pass
-                e = GraphException(code, msg)
+                e = GraphException(code, msg, graph=api, params=params)
                 if err_handler:
                     err_handler(e=e)
                 else:
@@ -443,18 +443,26 @@ class Node(bunch.Bunch):
         return self._api.copy(url=URLObject.parse(self.paging.next))
     
 class GraphException(Exception):
-    def __init__(self, code, message, args=None):
+    def __init__(self, code, message, args=None, params=None, graph=None):
         Exception.__init__(self)
+        print args
         if args is not None:
             self.args = args
         self.message = message
         self.code = code
+        self.params = params
+        self.graph = graph
         
     def __repr__(self):
         return str(self)
     
     def __str__(self):
-        return "%s: %s %s" % (self.code, self.message, self.args)
+        str = "%s, Node: %s" % (self.message, self.graph.url)
+        if self.params:
+            str = "%s, Params: %s" % (str, self.params)
+        if self.code:
+            str =  "(#%s) %s" % (str, self.code)
+        return str
 
 def indent(string, prefix='    '):
     """Indent each line of a string with a prefix (default is 4 spaces)."""
