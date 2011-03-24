@@ -188,8 +188,8 @@ class Graph(object):
         
         return self | ('ids', ','.join(map(str, ids)))
     
-    def node(self, data, params):
-        return Node._new(self, data, err_handler=self.err_handler, params=params)
+    def node(self, data, params, method=None):
+        return Node._new(self, data, err_handler=self.err_handler, params=params, method=method)
     
     def post(self, **params):
         
@@ -215,12 +215,12 @@ class Graph(object):
         else:
             params = dict([(k, v.encode('UTF-8')) for (k,v) in params.iteritems() if v is not None])
             fetch = partial(self.fetch, 
-                    self.url, 
-                    urllib2=self.urllib2,
-                    timeout=self.timeout, data=urllib.urlencode(params))
+                            self.url, 
+                            urllib2=self.urllib2,
+                            timeout=self.timeout, data=urllib.urlencode(params))
         
         data = json.loads(fetch())
-        return self.node(data, params)
+        return self.node(data, params, "post")
     
     def post_file(self, file, **params):
         
@@ -231,7 +231,7 @@ class Graph(object):
         params['httplib'] = self.httplib
         data = json.loads(self.post_mime(self.url, **params))
         
-        return self.node(data, params)
+        return self.node(data, params, "post_file")
     
     @staticmethod
     def post_mime(url, httplib=default_httplib, timeout=DEFAULT_TIMEOUT, **kwargs):
@@ -381,7 +381,7 @@ class Node(bunch.Bunch):
     """
     
     @classmethod
-    def _new(cls, api, data, err_handler=None, params=None):
+    def _new(cls, api, data, err_handler=None, params=None, method=None):
         
         """
         Create a new `Node` from a `Graph` and a JSON-decoded object.
@@ -398,9 +398,9 @@ class Node(bunch.Bunch):
                         code = int(code_re.match(msg).group(1))
                     except AttributeError:
                         pass
-                e = GraphException(code, msg, graph=api, params=params)
+                e = GraphException(code, msg, graph=api, params=params, method=method)
                 if err_handler:
-                    err_handler(e=e)
+                    return err_handler(e=e)
                 else:
                     raise e
             return cls(api, bunch.bunchify(data))
@@ -443,7 +443,7 @@ class Node(bunch.Bunch):
         return self._api.copy(url=URLObject.parse(self.paging.next))
     
 class GraphException(Exception):
-    def __init__(self, code, message, args=None, params=None, graph=None):
+    def __init__(self, code, message, args=None, params=None, graph=None, method=None):
         Exception.__init__(self)
         print args
         if args is not None:
@@ -452,6 +452,7 @@ class GraphException(Exception):
         self.code = code
         self.params = params
         self.graph = graph
+        self.method = method
         
     def __repr__(self):
         return str(self)
