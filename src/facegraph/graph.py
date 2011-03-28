@@ -394,10 +394,9 @@ class Node(bunch.Bunch):
                 code = data["error"].get("code")
                 msg = data["error"]["message"]
                 if code is None:
-                    try:
-                        code = int(code_re.match(msg).group(1))
-                    except AttributeError:
-                        pass
+                    code_match = code_re.match(msg)
+                    if code_match is not None:
+                        code = int(code_match.group(1))
                 e = GraphException(code, msg, graph=api, params=params, method=method)
                 if err_handler:
                     return err_handler(e=e)
