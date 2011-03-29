@@ -309,7 +309,7 @@ class Graph(object):
                 return conn.read()
             except urllib2.HTTPError, e:
                 return e.fp.read()        
-            except (BadStatusLine, urllib2.URLError):
+            except (BadStatusLine, IOError):
                 if attempt < retries:
                     attempt += 1
                 else:
