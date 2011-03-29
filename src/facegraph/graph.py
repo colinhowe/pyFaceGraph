@@ -156,7 +156,7 @@ class Graph(object):
         if isinstance(item, slice):
             params = {'offset': item.start,
                       'limit': item.stop - item.start}
-            return self.copy(url=(self.url & params))()
+            return self.copy(url=(self.url & params))
         return self.copy(url=(self.url / unicode(item)))
     
     def __getattr__(self, attr):
