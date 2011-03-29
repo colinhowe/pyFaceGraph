@@ -10,7 +10,6 @@ import bunch
 import simplejson as json
 from functools import partial
 from urlobject import URLObject
-from httplib import BadStatusLine
 
 p = "^\(#(\d+)\)"
 code_re = re.compile(p)
@@ -173,7 +172,10 @@ class Graph(object):
         
         if self.access_token:
             params['access_token'] = self.access_token
-        data = json.loads(self.fetch(self.url | params, timeout=self.timeout, urllib2=self.urllib2))
+        data = json.loads(self.fetch(self.url | params, 
+                                     timeout=self.timeout, 
+                                     urllib2=self.urllib2,
+                                     httplib=self.httplib))
         return self.node(data, params)
 
     def __sentry__(self):
@@ -218,6 +220,7 @@ class Graph(object):
             fetch = partial(self.fetch, 
                             self.url, 
                             urllib2=self.urllib2,
+                            httplib=self.httplib,
                             timeout=self.timeout, data=urllib.urlencode(params))
         
         data = json.loads(fetch())
@@ -290,7 +293,7 @@ class Graph(object):
         return self.post(method='delete')
     
     @staticmethod
-    def fetch(url, data=None, urllib2=default_urllib2, timeout=DEFAULT_TIMEOUT, retries=3):
+    def fetch(url, data=None, urllib2=default_urllib2, httplib=default_httplib, timeout=DEFAULT_TIMEOUT, retries=3):
         
         """
         Fetch the specified URL, with optional form data; return a string.
@@ -309,7 +312,7 @@ class Graph(object):
                 return conn.read()
             except urllib2.HTTPError, e:
                 return e.fp.read()        
-            except (BadStatusLine, IOError):
+            except (httplib.BadStatusLine, IOError):
                 if attempt < retries:
                     attempt += 1
                 else:
