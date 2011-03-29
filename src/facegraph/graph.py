@@ -149,7 +149,12 @@ class Graph(object):
     def copy(self, **update):
         """Copy this Graph, optionally overriding some attributes."""
         
-        return type(self)(access_token=self.access_token, err_handler=self.err_handler, **update)
+        return type(self)(
+                access_token=self.access_token, err_handler=self.err_handler,
+                timeout=self.timeout,
+                urllib2=self.urllib2,
+                httplib=self.httplib,
+                **update)
     
     def __getitem__(self, item):
         if isinstance(item, slice):
