@@ -307,7 +307,7 @@ class Graph(object):
                     kwargs = {'timeout': timeout}
                 conn = urllib2.urlopen(url, data=data, **kwargs)
                 return conn.read()
-            except BadStatusLine:
+            except (BadStatusLine, IOError):
                 if attempt < retries:
                     attempt += 1
                 else:
