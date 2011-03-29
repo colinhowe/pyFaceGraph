@@ -10,6 +10,7 @@ import bunch
 import simplejson as json
 from functools import partial
 from urlobject import URLObject
+from httplib import BadStatusLine
 
 p = "^\(#(\d+)\)"
 code_re = re.compile(p)
@@ -289,7 +290,7 @@ class Graph(object):
         return self.post(method='delete')
     
     @staticmethod
-    def fetch(url, data=None, urllib2=default_urllib2, timeout=DEFAULT_TIMEOUT):
+    def fetch(url, data=None, urllib2=default_urllib2, timeout=DEFAULT_TIMEOUT, retries=3):
         
         """
         Fetch the specified URL, with optional form data; return a string.
@@ -298,16 +299,23 @@ class Graph(object):
         it uses urllib2; you may override it and use an alternative library.
         """
         conn = None
-        try:
-            kwargs = {}
-            if timeout:
-                kwargs = {'timeout': timeout}
-            conn = urllib2.urlopen(url, data=data, **kwargs)
-            return conn.read()
-        except urllib2.HTTPError, e:
-            return e.fp.read()        
-        finally:
-            conn and conn.close()
+        attempt = 0
+        while True:
+            try:
+                kwargs = {}
+                if timeout:
+                    kwargs = {'timeout': timeout}
+                conn = urllib2.urlopen(url, data=data, **kwargs)
+                return conn.read()
+            except BadStatusLine:
+                if attempt < retries:
+                    attempt += 1
+                else:
+                    raise
+            except urllib2.HTTPError, e:
+                return e.fp.read()        
+            finally:
+                conn and conn.close()
 
     def __sentry__(self):
         '''Transform the graph object into something that sentry can 
