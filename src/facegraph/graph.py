@@ -452,7 +452,6 @@ class Node(bunch.Bunch):
 class GraphException(Exception):
     def __init__(self, code, message, args=None, params=None, graph=None, method=None):
         Exception.__init__(self)
-        print args
         if args is not None:
             self.args = args
         self.message = message
