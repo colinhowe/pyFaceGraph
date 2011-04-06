@@ -183,6 +183,9 @@ class Graph(object):
                                      httplib=self.httplib))
         return self.node(data, params)
 
+    def __iter__(self):
+        raise TypeError('%r object is not iterable' % self.__class__.__name__)
+
     def __sentry__(self):
         return 'Graph(url: %s, params: %s)' % (self.url, repr(self.__dict__))
     
