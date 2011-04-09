@@ -149,7 +149,12 @@ class Graph(object):
     def copy(self, **update):
         """Copy this Graph, optionally overriding some attributes."""
         
-        return type(self)(access_token=self.access_token, err_handler=self.err_handler, **update)
+        return type(self)(
+                access_token=self.access_token, err_handler=self.err_handler,
+                timeout=self.timeout,
+                urllib2=self.urllib2,
+                httplib=self.httplib,
+                **update)
     
     def __getitem__(self, item):
         if isinstance(item, slice):
@@ -177,6 +182,9 @@ class Graph(object):
                                      urllib2=self.urllib2,
                                      httplib=self.httplib))
         return self.node(data, params)
+
+    def __iter__(self):
+        raise TypeError('%r object is not iterable' % self.__class__.__name__)
 
     def __sentry__(self):
         return 'Graph(url: %s, params: %s)' % (self.url, repr(self.__dict__))
