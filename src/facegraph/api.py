@@ -59,14 +59,12 @@ class Api:
         '''
         return self[name]
     
-    def __call__(self, _tries=3, *args, **kwargs):
+    def __call__(self, _retries=3, *args, **kwargs):
         '''
         Executes an old REST api method using the stored method stack
         '''
         if len(self.stack)>0:
-            kwargs.update({
-                "format": "JSON"
-            })
+            kwargs.update({"format": "JSON"})
             method = self.__method()
             # Custom overrides
             if method == "photos.upload":
@@ -94,7 +92,7 @@ class Api:
                     response = e.fp
                     break
                 except IOError, e:
-                    if attempts_done < _tries:
+                    if attempts_done < _retries:
                         attempts_done += 1
                     else:
                         raise 
