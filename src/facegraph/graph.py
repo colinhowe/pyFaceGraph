@@ -246,7 +246,7 @@ class Graph(object):
         return self.node(data, params, "post_file")
     
     @staticmethod
-    def post_mime(url, httplib=default_httplib, timeout=DEFAULT_TIMEOUT, **kwargs):
+    def post_mime(url, httplib=default_httplib, timeout=DEFAULT_TIMEOUT, retries=3, **kwargs):
         
         body = []
         crlf = '\r\n'
@@ -289,11 +289,17 @@ class Graph(object):
                    'MIME-Version': '1.0'}
         
         r.request('POST', url.path, body, headers)
-        
-        try:
-            return r.getresponse().read()
-        finally:
-            r.close()
+        attempt = 0
+        while True:
+            try:
+                return r.getresponse().read()
+            except (httplib.BadStatusLine, IOError):
+                if attempt < retries:
+                    attempt += 1
+                else:
+                    raise
+            finally:
+                r.close()
     
     def delete(self):
         """Delete this resource. Sends a POST with `?method=delete`."""

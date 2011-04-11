@@ -1,6 +1,6 @@
 # -*- coding: utf-8 -*-
 
-__version__ = '0.0.23'
+__version__ = '0.0.24'
 
 from facegraph.canvas import decode_signed_request
 from facegraph.api import Api

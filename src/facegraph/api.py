@@ -164,8 +164,18 @@ class Api:
                    'MIME-Version': '1.0'}
         
         r.request('POST', '/method/photos.upload', body, headers)
-                        
-        return self.__process_response(r.getresponse(), params=kwargs)
+        
+        attempt = 0
+        while True:
+            try:
+                return self.__process_response(r.getresponse(), params=kwargs)
+            except (httplib.BadStatusLine, IOError):
+                if attempt < retries:
+                    attempt += 1
+                else:
+                    raise
+            finally:
+                r.close()            
         
     def check_cookie(self, request, app_id):
         """"
