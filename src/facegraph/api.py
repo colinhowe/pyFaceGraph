@@ -59,7 +59,7 @@ class Api:
         '''
         return self[name]
     
-    def __call__(self, _retries=3, *args, **kwargs):
+    def __call__(self, _tries=3, *args, **kwargs):
         '''
         Executes an old REST api method using the stored method stack
         '''
@@ -92,7 +92,7 @@ class Api:
                     response = e.fp
                     break
                 except IOError, e:
-                    if attempts_done < _retries:
+                    if attempts_done < _tries:
                         attempts_done += 1
                     else:
                         raise 
