@@ -37,7 +37,7 @@ class Api:
         return u'FB(method: %s, access_token: %s)' % (self.__method(), self.access_token)
 
     def __repr__(self):
-        return "<FB api at %s>" % self.__method()
+        return '<FB(%r) at 0x%x>' % (self.__method(), id(self))
     
     def __method(self):
         return u".".join(self.stack)
@@ -50,7 +50,8 @@ class Api:
         s = []
         s.extend(self.stack)
         s.append(name)
-        return self.__class__(stack=s, access_token=self.access_token, cookie=self.cookie)
+        return self.__class__(stack=s, access_token=self.access_token, cookie=self.cookie, err_handler=self.err_handler,
+                              timeout=self.timeout, urllib2=self.urllib2, httplib=self.httplib)
     
     def __getattr__(self, name):
         '''
