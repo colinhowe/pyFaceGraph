@@ -59,7 +59,7 @@ class Api:
         '''
         return self[name]
     
-    def __call__(self, _tries=3, *args, **kwargs):
+    def __call__(self, _retries=3, *args, **kwargs):
         '''
         Executes an old REST api method using the stored method stack
         '''
@@ -83,7 +83,7 @@ class Api:
                 url += 'access_token=%s&' % self.access_token        
             url += urlencode(utf8_kwargs)
             
-            attempts_done = 0
+            attempt = 0
             while True:
                 try:
                     response = self.urllib2.urlopen(url, timeout=self.timeout)
@@ -92,8 +92,8 @@ class Api:
                     response = e.fp
                     break
                 except IOError, e:
-                    if attempts_done < _tries:
-                        attempts_done += 1
+                    if attempt < _retries:
+                        attempt += 1
                     else:
                         raise 
 
