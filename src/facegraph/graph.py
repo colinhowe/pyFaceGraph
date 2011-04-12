@@ -246,7 +246,7 @@ class Graph(object):
         return self.node(data, params, "post_file")
     
     @staticmethod
-    def post_mime(url, httplib=default_httplib, timeout=DEFAULT_TIMEOUT, retries=3, **kwargs):
+    def post_mime(url, httplib=default_httplib, timeout=DEFAULT_TIMEOUT, retries=5, **kwargs):
         
         body = []
         crlf = '\r\n'

@@ -59,7 +59,7 @@ class Api:
         '''
         return self[name]
     
-    def __call__(self, _retries=3, *args, **kwargs):
+    def __call__(self, _retries=5, *args, **kwargs):
         '''
         Executes an old REST api method using the stored method stack
         '''
@@ -86,21 +86,21 @@ class Api:
             attempt = 0
             while True:
                 try:
-                    response = self.urllib2.urlopen(url, timeout=self.timeout)
+                    response = self.urllib2.urlopen(url, timeout=self.timeout).read()
                     break
                 except self.urllib2.HTTPError, e:
                     response = e.fp
                     break
-                except IOError, e:
+                except (self.httplib.BadStatusLine, IOError):
                     if attempt < _retries:
                         attempt += 1
                     else:
-                        raise 
+                        raise
 
             return self.__process_response(response, params=kwargs)
 
     def __process_response(self, response, params=None):
-        data = simplejson.load(response)
+        data = simplejson.loads(response)
         try:
             if 'error_code' in data:
                 e = ApiException(code=int(data.get('error_code')),
@@ -168,8 +168,9 @@ class Api:
         attempt = 0
         while True:
             try:
-                return self.__process_response(r.getresponse(), params=kwargs)
-            except (httplib.BadStatusLine, IOError):
+                response = r.getresponse().read()
+                return self.__process_response(response, params=kwargs)
+            except (self.httplib.BadStatusLine, IOError):
                 if attempt < retries:
                     attempt += 1
                 else:
