@@ -117,7 +117,7 @@ class Api:
             pass
         return data
 
-    def __photo_upload(self, **kwargs):
+    def __photo_upload(self, _retries=5, **kwargs):
         
         body = []
         crlf = '\r\n'
@@ -171,7 +171,7 @@ class Api:
                 response = r.getresponse().read()
                 return self.__process_response(response, params=kwargs)
             except (self.httplib.BadStatusLine, IOError):
-                if attempt < retries:
+                if attempt < _retries:
                     attempt += 1
                 else:
                     raise

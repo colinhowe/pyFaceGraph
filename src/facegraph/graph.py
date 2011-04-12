@@ -307,7 +307,7 @@ class Graph(object):
         return self.post(method='delete')
     
     @staticmethod
-    def fetch(url, data=None, urllib2=default_urllib2, httplib=default_httplib, timeout=DEFAULT_TIMEOUT, retries=3):
+    def fetch(url, data=None, urllib2=default_urllib2, httplib=default_httplib, timeout=DEFAULT_TIMEOUT, retries=5):
         
         """
         Fetch the specified URL, with optional form data; return a string.
