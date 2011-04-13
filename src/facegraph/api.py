@@ -89,7 +89,7 @@ class Api:
                     response = self.urllib2.urlopen(url, timeout=self.timeout).read()
                     break
                 except self.urllib2.HTTPError, e:
-                    response = e.fp
+                    response = e.fp.read()
                     break
                 except (self.httplib.BadStatusLine, IOError):
                     if attempt < _retries:
