@@ -4,6 +4,7 @@
 import socket
 import simplejson
 from urllib import urlencode, unquote
+from simplejson.decoder import JSONDecodeError
 
 FB_READ_TIMEOUT = 180
 
@@ -100,7 +101,10 @@ class Api:
             return self.__process_response(response, params=kwargs)
 
     def __process_response(self, response, params=None):
-        data = simplejson.loads(response)
+        try:
+            data = simplejson.loads(response)
+        except JSONDecodeError:
+            pass
         try:
             if 'error_code' in data:
                 e = ApiException(code=int(data.get('error_code')),
