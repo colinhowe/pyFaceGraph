@@ -11,13 +11,15 @@ FB_READ_TIMEOUT = 180
 class Api:
     
     def __init__(self, access_token=None, request=None, cookie=None, app_id=None, stack=None,
-                       err_handler=None, timeout=FB_READ_TIMEOUT, urllib2=None, httplib=None):
+                       err_handler=None, timeout=FB_READ_TIMEOUT, urllib2=None, httplib=None,
+                       retries=5):
         
         self.uid = None
         self.access_token = access_token
         self.stack = stack if stack else []
         self.cookie = cookie
         self.err_handler = err_handler
+        self.retries = retries
         
         if urllib2 is None:
             import urllib2
@@ -52,7 +54,7 @@ class Api:
         s.extend(self.stack)
         s.append(name)
         return self.__class__(stack=s, access_token=self.access_token, cookie=self.cookie, err_handler=self.err_handler,
-                              timeout=self.timeout, urllib2=self.urllib2, httplib=self.httplib)
+                              timeout=self.timeout, retries=self.retries, urllib2=self.urllib2, httplib=self.httplib)
     
     def __getattr__(self, name):
         '''
@@ -60,10 +62,12 @@ class Api:
         '''
         return self[name]
     
-    def __call__(self, _retries=5, *args, **kwargs):
+    def __call__(self, _retries=None, *args, **kwargs):
         '''
         Executes an old REST api method using the stored method stack
         '''
+        _retries = _retries or self.retries
+        
         if len(self.stack)>0:
             kwargs.update({"format": "JSON"})
             method = self.__method()
@@ -121,7 +125,8 @@ class Api:
             pass
         return data
 
-    def __photo_upload(self, _retries=5, **kwargs):
+    def __photo_upload(self, _retries=None, **kwargs):
+        _retries = _retries or self.retries
         
         body = []
         crlf = '\r\n'

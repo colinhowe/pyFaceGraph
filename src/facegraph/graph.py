@@ -130,11 +130,12 @@ class Graph(object):
     API_ROOT = URLObject.parse('https://graph.facebook.com/')
     DEFAULT_TIMEOUT = 0 # No timeout as default
     
-    def __init__(self, access_token=None, err_handler=None, timeout=DEFAULT_TIMEOUT, urllib2=None, httplib=None, **state):
+    def __init__(self, access_token=None, err_handler=None, timeout=DEFAULT_TIMEOUT, retries=5, urllib2=None, httplib=None, **state):
         self.access_token = access_token
         self.err_handler = err_handler
         self.url = self.API_ROOT
         self.timeout = timeout
+        self.retries = retries
         self.__dict__.update(state)
         if urllib2 is None:
             import urllib2
@@ -149,12 +150,13 @@ class Graph(object):
     def copy(self, **update):
         """Copy this Graph, optionally overriding some attributes."""
         
-        return type(self)(
-                access_token=self.access_token, err_handler=self.err_handler,
-                timeout=self.timeout,
-                urllib2=self.urllib2,
-                httplib=self.httplib,
-                **update)
+        return type(self)(access_token=self.access_token, 
+                          err_handler=self.err_handler,
+                          timeout=self.timeout,
+                          retries=self.retries,
+                          urllib2=self.urllib2,
+                          httplib=self.httplib,
+                          **update)
     
     def __getitem__(self, item):
         if isinstance(item, slice):
@@ -178,7 +180,8 @@ class Graph(object):
         if self.access_token:
             params['access_token'] = self.access_token
         data = json.loads(self.fetch(self.url | params, 
-                                     timeout=self.timeout, 
+                                     timeout=self.timeout,
+                                     retries=self.retries, 
                                      urllib2=self.urllib2,
                                      httplib=self.httplib))
         return self.node(data, params)
@@ -222,14 +225,20 @@ class Graph(object):
         if self.url.path.split('/')[-1] in ['photos']:
             params['timeout'] = self.timeout
             params['httplib'] = self.httplib
-            fetch = partial(self.post_mime, self.url, **params)
+            fetch = partial(self.post_mime, 
+                            self.url,
+                            httplib=self.httplib,
+                            retries=self.retries, 
+                            **params)
         else:
             params = dict([(k, v.encode('UTF-8')) for (k,v) in params.iteritems() if v is not None])
             fetch = partial(self.fetch, 
                             self.url, 
                             urllib2=self.urllib2,
                             httplib=self.httplib,
-                            timeout=self.timeout, data=urllib.urlencode(params))
+                            timeout=self.timeout,
+                            retries=self.retries, 
+                            data=urllib.urlencode(params))
         
         data = json.loads(fetch())
         return self.node(data, params, "post")
@@ -307,7 +316,7 @@ class Graph(object):
         return self.post(method='delete')
     
     @staticmethod
-    def fetch(url, data=None, urllib2=default_urllib2, httplib=default_httplib, timeout=DEFAULT_TIMEOUT, retries=5):
+    def fetch(url, data=None, urllib2=default_urllib2, httplib=default_httplib, timeout=DEFAULT_TIMEOUT, retries=None):
         
         """
         Fetch the specified URL, with optional form data; return a string.
