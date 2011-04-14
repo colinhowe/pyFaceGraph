@@ -108,7 +108,7 @@ class Api:
         try:
             data = simplejson.loads(response)
         except JSONDecodeError:
-            pass
+            data = response
         try:
             if 'error_code' in data:
                 e = ApiException(code=int(data.get('error_code')),
