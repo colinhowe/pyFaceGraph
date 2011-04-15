@@ -108,7 +108,7 @@ class FQL(object):
         return self.fetch_json(url)
     
     def fetch_json(cls, url, data=None):
-        response = json.loads(cls.fetch(url, data=data))
+        response = json.loads(self.__class__.fetch(url, data=data))
         if isinstance(response, dict):
             if response.get("error_msg"):
                 code = response.get("error_code")
