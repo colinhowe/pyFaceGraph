@@ -107,7 +107,6 @@ class FQL(object):
         
         return self.fetch_json(url)
     
-    @classmethod
     def fetch_json(cls, url, data=None):
         response = json.loads(cls.fetch(url, data=data))
         if isinstance(response, dict):
@@ -116,8 +115,8 @@ class FQL(object):
                 msg = response.get("error_msg")
                 args = response.get("request_args")
                 e = GraphException(code, msg, args=args)
-                if cls.err_handler:
-                    cls.err_handler(e)
+                if self.err_handler:
+                    self.err_handler(e)
                 else:
                     raise e
         return bunch.bunchify(response)
