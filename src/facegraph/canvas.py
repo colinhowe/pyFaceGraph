@@ -15,7 +15,7 @@ def b64url_decode(encoded):
     
     # The padding should round the length of the string up to a multiple of 4.
     padding_fixed = encoded + (((4 - (len(encoded) % 4)) % 4) * '=')
-    return base64.urlsafe_b64decode(padding_fixed)
+    return base64.urlsafe_b64decode(str(padding_fixed))
 
 
 def decode_signed_request(app_secret, signed_request):
