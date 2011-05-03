@@ -297,7 +297,7 @@ class Graph(object):
                    'Content-Length': str(len(body)),
                    'MIME-Version': '1.0'}
         
-        r.request('POST', url.path, body, headers)
+        r.request('POST', url.path.encode(), body, headers)
         attempt = 0
         while True:
             try:
