@@ -13,7 +13,7 @@ import signature
 def b64url_encode(data):
     return base64.urlsafe_b64encode(data).rstrip('=')
         
-def b64url_decode(encoded):
+def b64url_decode(data):
     data = data.encode(u'ascii')
     data += '=' * (4 - (len(data) % 4))
     return base64.urlsafe_b64decode(data)
