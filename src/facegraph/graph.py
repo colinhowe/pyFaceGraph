@@ -426,7 +426,11 @@ class Node(bunch.Bunch):
         if isinstance(data, dict):
             if data.get("error"):
                 code = data["error"].get("code")
-                msg = data["error"]["message"]
+                if code is None:
+                    code = data["error"].get("error_code")
+                msg = data["error"].get("message")
+                if msg is None:
+                    msg = data["error"].get("error_msg")
                 if code is None:
                     code_match = code_re.match(msg)
                     if code_match is not None:
