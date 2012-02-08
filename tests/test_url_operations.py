@@ -12,23 +12,36 @@ class UrlOperationsTests(TestCase):
         self.assertEquals('http://a.com/path/', url_operations.add_path(url, 'path/'))
         self.assertEquals('http://a.com/path/', url_operations.add_path(url, '/path/'))
 
+    def test_add_path_trailing_slash(self):
         url = u'http://a.com/'
         self.assertEquals('http://a.com/path', url_operations.add_path(url, 'path'))
         self.assertEquals('http://a.com/path', url_operations.add_path(url, '/path'))
         self.assertEquals('http://a.com/path/', url_operations.add_path(url, 'path/'))
         self.assertEquals('http://a.com/path/', url_operations.add_path(url, '/path/'))
 
+    def test_add_path_existing_path(self):
         url = u'http://a.com/path1'
         self.assertEquals('http://a.com/path1/path2', url_operations.add_path(url, 'path2'))
         self.assertEquals('http://a.com/path1/path2', url_operations.add_path(url, '/path2'))
         self.assertEquals('http://a.com/path1/path2/', url_operations.add_path(url, 'path2/'))
         self.assertEquals('http://a.com/path1/path2/', url_operations.add_path(url, '/path2/'))
 
+    def test_add_path_trailing_slash_and_existing_path(self):
         url = u'http://a.com/path1/'
         self.assertEquals('http://a.com/path1/path2', url_operations.add_path(url, 'path2'))
         self.assertEquals('http://a.com/path1/path2', url_operations.add_path(url, '/path2'))
         self.assertEquals('http://a.com/path1/path2/', url_operations.add_path(url, 'path2/'))
         self.assertEquals('http://a.com/path1/path2/', url_operations.add_path(url, '/path2/'))
+
+    def test_add_path_fragment(self):
+        url = u'http://a.com/path1/#anchor'
+        self.assertEquals('http://a.com/path1/path2#anchor', url_operations.add_path(url, 'path2'))
+        self.assertEquals('http://a.com/path1/path2/#anchor', url_operations.add_path(url, 'path2/'))
+
+    def test_add_path_query_string(self):
+        url = u'http://a.com/path1/?a=b'
+        self.assertEquals('http://a.com/path1/path2?a=b', url_operations.add_path(url, 'path2'))
+        self.assertEquals('http://a.com/path1/path2/?a=b', url_operations.add_path(url, 'path2/'))
 
     def test_query_param(self):
         self.assertEquals(('a', 'b'), url_operations._query_param('a', 'b'))

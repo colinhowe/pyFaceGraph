@@ -2,15 +2,17 @@ import urllib
 import cgi
 import urlparse
 
-def add_path(url, path):
+def add_path(url, new_path):
     """Given a url and path, return a new url that combines
     the two.
     """
-    path = path.lstrip('/')
-    if url.endswith('/'):
-        return url + path
+    scheme, host, path, query, fragment = urlparse.urlsplit(url)
+    new_path = new_path.lstrip('/')
+    if path.endswith('/'):
+        path += new_path
     else:
-        return url + '/' + path
+        path += '/' + new_path
+    return urlparse.urlunsplit([scheme, host, path, query, fragment])
 
 def _query_param(key, value):
     """ensure that a query parameter's value is a string
