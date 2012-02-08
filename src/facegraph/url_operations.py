@@ -2,6 +2,14 @@ import urllib
 import cgi
 import urlparse
 
+def get_path(url):
+    scheme, host, path, query, fragment = urlparse.urlsplit(url)
+    return path
+
+def get_host(url):
+    scheme, host, path, query, fragment = urlparse.urlsplit(url)
+    return host
+
 def add_path(url, new_path):
     """Given a url and path, return a new url that combines
     the two.

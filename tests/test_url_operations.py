@@ -1,93 +1,106 @@
 from unittest import TestCase
-from facegraph import graph, url_operations
+from facegraph import graph
+from facegraph import url_operations as ops
 from facegraph.fql import FQL
 from mock import patch
 
 class UrlOperationsTests(TestCase):
+    def test_get_path(self):
+        self.assertEquals('', ops.get_path(u'http://a.com'))
+        self.assertEquals('/', ops.get_path(u'http://a.com/'))
+        self.assertEquals('/a', ops.get_path(u'http://a.com/a'))
+        self.assertEquals('/a/', ops.get_path(u'http://a.com/a/'))
+        self.assertEquals('/a/b', ops.get_path(u'http://a.com/a/b'))
+
+    def test_get_host(self):
+        self.assertEquals('a.com', ops.get_host('http://a.com'))
+        self.assertEquals('a.com', ops.get_host('http://a.com/a/b'))
+        self.assertEquals('a.com', ops.get_host('http://a.com/a?a=b'))
+
     def testadd_path(self):
         url = u'http://a.com'
-        self.assertEquals('http://a.com/', url_operations.add_path(url, ''))
-        self.assertEquals('http://a.com/path', url_operations.add_path(url, 'path'))
-        self.assertEquals('http://a.com/path', url_operations.add_path(url, '/path'))
-        self.assertEquals('http://a.com/path/', url_operations.add_path(url, 'path/'))
-        self.assertEquals('http://a.com/path/', url_operations.add_path(url, '/path/'))
+        self.assertEquals('http://a.com/', ops.add_path(url, ''))
+        self.assertEquals('http://a.com/path', ops.add_path(url, 'path'))
+        self.assertEquals('http://a.com/path', ops.add_path(url, '/path'))
+        self.assertEquals('http://a.com/path/', ops.add_path(url, 'path/'))
+        self.assertEquals('http://a.com/path/', ops.add_path(url, '/path/'))
 
     def test_add_path_trailing_slash(self):
         url = u'http://a.com/'
-        self.assertEquals('http://a.com/path', url_operations.add_path(url, 'path'))
-        self.assertEquals('http://a.com/path', url_operations.add_path(url, '/path'))
-        self.assertEquals('http://a.com/path/', url_operations.add_path(url, 'path/'))
-        self.assertEquals('http://a.com/path/', url_operations.add_path(url, '/path/'))
+        self.assertEquals('http://a.com/path', ops.add_path(url, 'path'))
+        self.assertEquals('http://a.com/path', ops.add_path(url, '/path'))
+        self.assertEquals('http://a.com/path/', ops.add_path(url, 'path/'))
+        self.assertEquals('http://a.com/path/', ops.add_path(url, '/path/'))
 
     def test_add_path_existing_path(self):
         url = u'http://a.com/path1'
-        self.assertEquals('http://a.com/path1/path2', url_operations.add_path(url, 'path2'))
-        self.assertEquals('http://a.com/path1/path2', url_operations.add_path(url, '/path2'))
-        self.assertEquals('http://a.com/path1/path2/', url_operations.add_path(url, 'path2/'))
-        self.assertEquals('http://a.com/path1/path2/', url_operations.add_path(url, '/path2/'))
+        self.assertEquals('http://a.com/path1/path2', ops.add_path(url, 'path2'))
+        self.assertEquals('http://a.com/path1/path2', ops.add_path(url, '/path2'))
+        self.assertEquals('http://a.com/path1/path2/', ops.add_path(url, 'path2/'))
+        self.assertEquals('http://a.com/path1/path2/', ops.add_path(url, '/path2/'))
 
     def test_add_path_trailing_slash_and_existing_path(self):
         url = u'http://a.com/path1/'
-        self.assertEquals('http://a.com/path1/path2', url_operations.add_path(url, 'path2'))
-        self.assertEquals('http://a.com/path1/path2', url_operations.add_path(url, '/path2'))
-        self.assertEquals('http://a.com/path1/path2/', url_operations.add_path(url, 'path2/'))
-        self.assertEquals('http://a.com/path1/path2/', url_operations.add_path(url, '/path2/'))
+        self.assertEquals('http://a.com/path1/path2', ops.add_path(url, 'path2'))
+        self.assertEquals('http://a.com/path1/path2', ops.add_path(url, '/path2'))
+        self.assertEquals('http://a.com/path1/path2/', ops.add_path(url, 'path2/'))
+        self.assertEquals('http://a.com/path1/path2/', ops.add_path(url, '/path2/'))
 
     def test_add_path_fragment(self):
         url = u'http://a.com/path1/#anchor'
-        self.assertEquals('http://a.com/path1/path2#anchor', url_operations.add_path(url, 'path2'))
-        self.assertEquals('http://a.com/path1/path2/#anchor', url_operations.add_path(url, 'path2/'))
+        self.assertEquals('http://a.com/path1/path2#anchor', ops.add_path(url, 'path2'))
+        self.assertEquals('http://a.com/path1/path2/#anchor', ops.add_path(url, 'path2/'))
 
     def test_add_path_query_string(self):
         url = u'http://a.com/path1/?a=b'
-        self.assertEquals('http://a.com/path1/path2?a=b', url_operations.add_path(url, 'path2'))
-        self.assertEquals('http://a.com/path1/path2/?a=b', url_operations.add_path(url, 'path2/'))
+        self.assertEquals('http://a.com/path1/path2?a=b', ops.add_path(url, 'path2'))
+        self.assertEquals('http://a.com/path1/path2/?a=b', ops.add_path(url, 'path2/'))
 
     def test_query_param(self):
-        self.assertEquals(('a', 'b'), url_operations._query_param('a', 'b'))
+        self.assertEquals(('a', 'b'), ops._query_param('a', 'b'))
 
     def test_query_param_unicode(self):
         # unicode objects should be encoded as utf-8 bytes
-        self.assertEquals(('a', 'b'), url_operations._query_param('a', u'b'))
-        self.assertEquals(('a', '\xc3\xa9'), url_operations._query_param('a', u'\xe9'))
+        self.assertEquals(('a', 'b'), ops._query_param('a', u'b'))
+        self.assertEquals(('a', '\xc3\xa9'), ops._query_param('a', u'\xe9'))
 
         # bytes should be remain as bytes
-        self.assertEquals(('a', '\xc3\xa9'), url_operations._query_param('a', '\xc3\xa9'))
+        self.assertEquals(('a', '\xc3\xa9'), ops._query_param('a', '\xc3\xa9'))
 
     def test_add_query_params(self):
         url = u'http://a.com'
-        self.assertEquals('http://a.com?a=b', url_operations.add_query_params(url, ('a', 'b')))
-        self.assertEquals('http://a.com?a=b', url_operations.add_query_params(url, {'a': 'b'}))
-        self.assertEquals('http://a.com?a=%C3%A9', url_operations.add_query_params(url, {'a': '\xc3\xa9'}))
+        self.assertEquals('http://a.com?a=b', ops.add_query_params(url, ('a', 'b')))
+        self.assertEquals('http://a.com?a=b', ops.add_query_params(url, {'a': 'b'}))
+        self.assertEquals('http://a.com?a=%C3%A9', ops.add_query_params(url, {'a': '\xc3\xa9'}))
 
         url = u'http://a.com/path'
-        self.assertEquals('http://a.com/path?a=b', url_operations.add_query_params(url, {'a': 'b'}))
+        self.assertEquals('http://a.com/path?a=b', ops.add_query_params(url, {'a': 'b'}))
 
         url = u'http://a.com?a=b'
-        self.assertEquals('http://a.com?a=b&a=c', url_operations.add_query_params(url, ('a', 'c')))
-        self.assertEquals('http://a.com?a=b&c=d', url_operations.add_query_params(url, ('c', 'd')))
+        self.assertEquals('http://a.com?a=b&a=c', ops.add_query_params(url, ('a', 'c')))
+        self.assertEquals('http://a.com?a=b&c=d', ops.add_query_params(url, ('c', 'd')))
 
     def test_update_query_params(self):
         url = u'http://a.com?a=b'
-        self.assertEquals('http://a.com?a=b', url_operations.update_query_params(url, {}))
-        self.assertEquals('http://a.com?a=c', url_operations.update_query_params(url, ('a', 'c')))
-        self.assertEquals('http://a.com?a=b&c=d', url_operations.update_query_params(url, {'c': 'd'}))
-        self.assertEquals('http://a.com?a=%C4%A9', url_operations.update_query_params(url, {'a': '\xc4\xa9'}))
+        self.assertEquals('http://a.com?a=b', ops.update_query_params(url, {}))
+        self.assertEquals('http://a.com?a=c', ops.update_query_params(url, ('a', 'c')))
+        self.assertEquals('http://a.com?a=b&c=d', ops.update_query_params(url, {'c': 'd'}))
+        self.assertEquals('http://a.com?a=%C4%A9', ops.update_query_params(url, {'a': '\xc4\xa9'}))
 
         url = u'http://a.com/path?a=b'
-        self.assertEquals('http://a.com/path?a=c', url_operations.update_query_params(url, {'a': 'c'}))
+        self.assertEquals('http://a.com/path?a=c', ops.update_query_params(url, {'a': 'c'}))
 
     def test_escaping(self):
         url = u'http://a.com'
-        self.assertEquals('http://a.com?my+key=c', url_operations.add_query_params(url, ('my key', 'c')))
-        self.assertEquals('http://a.com?c=my+val', url_operations.add_query_params(url, ('c', 'my val')))
+        self.assertEquals('http://a.com?my+key=c', ops.add_query_params(url, ('my key', 'c')))
+        self.assertEquals('http://a.com?c=my+val', ops.add_query_params(url, ('c', 'my val')))
 
     def test_no_double_escaping_existing_params(self):
         url = 'http://a.com?a=%C4%A9'
-        self.assertEquals('http://a.com?a=%C4%A9&c=d', url_operations.update_query_params(url, {'c': 'd'}))
+        self.assertEquals('http://a.com?a=%C4%A9&c=d', ops.update_query_params(url, {'c': 'd'}))
 
         url = 'http://a.com?a=my+val'
-        self.assertEquals('http://a.com?a=my+val&c=d', url_operations.update_query_params(url, {'c': 'd'}))
+        self.assertEquals('http://a.com?a=my+val&c=d', ops.update_query_params(url, {'c': 'd'}))
 
 class GraphUrlTests(TestCase):
     def setUp(self):

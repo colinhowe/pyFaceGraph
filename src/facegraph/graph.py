@@ -6,8 +6,8 @@ import urllib
 import urllib2 as default_urllib2
 import httplib as default_httplib
 
-from facegraph.url_operations import (add_path,
-        add_query_params, update_query_params)
+from facegraph.url_operations import (add_path, get_host,
+        add_query_params, update_query_params, get_path)
 
 import bunch
 import simplejson as json
@@ -219,7 +219,7 @@ class Graph(object):
         if self.access_token:
             params['access_token'] = self.access_token
         
-        if self.url.split('/')[-1] in ['photos']:
+        if get_path(self.url).split('/')[-1] in ['photos']:
             params['timeout'] = self.timeout
             params['httplib'] = self.httplib
             fetch = partial(self.post_mime, 
@@ -289,12 +289,12 @@ class Graph(object):
         kwargs = {}
         if timeout:
             kwargs = {'timeout': timeout}
-        r = httplib.HTTPSConnection(url.host, **kwargs)
+        r = httplib.HTTPSConnection(get_host(url), **kwargs)
         headers = {'Content-Type': 'multipart/form-data; boundary=%s' % boundary,
                    'Content-Length': str(len(body)),
                    'MIME-Version': '1.0'}
         
-        r.request('POST', url.path.encode(), body, headers)
+        r.request('POST', get_path(url).encode(), body, headers)
         attempt = 0
         while True:
             try:
