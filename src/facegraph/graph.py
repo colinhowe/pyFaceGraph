@@ -6,16 +6,17 @@ import urllib
 import urllib2 as default_urllib2
 import httplib as default_httplib
 
+from facegraph.url_operations import (add_path,
+        add_query_params, update_query_params)
+
 import bunch
 import simplejson as json
 from functools import partial
-from urlobject import URLObject
 
 p = "^\(#(\d+)\)"
 code_re = re.compile(p)
 
 __all__ = ['Graph']
-
 
 class Graph(object):
     
@@ -40,13 +41,8 @@ class Graph(object):
     
     Each `Graph` contains an access token and a URL. The graph you just created
     will have its URL set to 'https://graph.facebook.com/' by default (this is
-    defined as the class attribute `Graph.API_ROOT`). The URL is represented as
-    a `URLObject`; see <http://github.com/zacharyvoase/urlobject> for more
-    information. Remember that you can treat it exactly as you would a `unicode`
-    string; it just supports a few more methods to enable easy URL manipulation.
-    
-        >>> g.url
-        <URLObject(u'https://graph.facebook.com/') at 0x...>
+    defined as the class attribute `Graph.API_ROOT`).
+
         >>> print g.url
         https://graph.facebook.com/
     
@@ -127,7 +123,7 @@ class Graph(object):
     
     """
     
-    API_ROOT = URLObject.parse('https://graph.facebook.com/')
+    API_ROOT = 'https://graph.facebook.com/'
     DEFAULT_TIMEOUT = 0 # No timeout as default
     
     def __init__(self, access_token=None, err_handler=None, timeout=DEFAULT_TIMEOUT, retries=5, urllib2=None, httplib=None, **state):
@@ -145,7 +141,7 @@ class Graph(object):
         self.httplib = httplib
     
     def __repr__(self):
-        return '<Graph(%r) at 0x%x>' % (str(self.url), id(self))
+        return '<Graph(%r) at 0x%x>' % (self.url, id(self))
     
     def copy(self, **update):
         """Copy this Graph, optionally overriding some attributes."""
@@ -162,24 +158,25 @@ class Graph(object):
         if isinstance(item, slice):
             params = {'offset': item.start,
                       'limit': item.stop - item.start}
-            return self.copy(url=(self.url & params))
-        return self.copy(url=(self.url / unicode(item)))
+            return self.copy(url=add_query_params(self.url, params))
+        return self.copy(url=add_path(self.url, unicode(item)))
     
     def __getattr__(self, attr):
         return self[attr]
     
     def __or__(self, params):
-        return self.copy(url=(self.url | params))
+        return self.copy(url=update_query_params(self.url, params))
     
     def __and__(self, params):
-        return self.copy(url=(self.url & params))
+        return self.copy(url=add_query_params(self.url, params))
     
     def __call__(self, **params):
         """Read the current URL, and JSON-decode the results."""
         
         if self.access_token:
             params['access_token'] = self.access_token
-        data = json.loads(self.fetch(self.url | params, 
+        url = update_query_params(self.url, params)
+        data = json.loads(self.fetch(url,
                                      timeout=self.timeout,
                                      retries=self.retries, 
                                      urllib2=self.urllib2,
@@ -222,7 +219,7 @@ class Graph(object):
         if self.access_token:
             params['access_token'] = self.access_token
         
-        if self.url.path.split('/')[-1] in ['photos']:
+        if self.url.split('/')[-1] in ['photos']:
             params['timeout'] = self.timeout
             params['httplib'] = self.httplib
             fetch = partial(self.post_mime, 
@@ -466,18 +463,6 @@ class Node(bunch.Bunch):
             return bunch.Bunch.__getattr__(self, attr)
         except AttributeError:
             return self._api[attr]
-    
-    @property
-    def next_page(self):
-        """Shortcut for a `Graph` pointing to the next page."""
-        
-        return self._api.copy(url=URLObject.parse(self.paging.next))
-    
-    @property
-    def previous_page(self):
-        """Shortcut for a `Graph` pointing to the previous page."""
-        
-        return self._api.copy(url=URLObject.parse(self.paging.next))
     
 class GraphException(Exception):
     def __init__(self, code, message, args=None, params=None, graph=None, method=None):

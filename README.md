@@ -35,13 +35,8 @@ To begin using the API, create a new `Graph` with an access token:
 
 Each `Graph` contains an access token and a URL. The graph you just created
 will have a URL of 'https://graph.facebook.com/' by default (this is defined as
-the class attribute `Graph.API_ROOT`). The URL is represented as a `URLObject`;
-see <http://github.com/zacharyvoase/urlobject> for more information. Remember
-that you can treat it exactly as you would a `unicode` string; it just supports
-a few more methods to enable easy URL manipulation.
+the class attribute `Graph.API_ROOT`). 
 
-    >>> g.url
-    <URLObject(u'https://graph.facebook.com/') at 0x...>
     >>> print g.url
     https://graph.facebook.com/
     >>> unicode(g.url)

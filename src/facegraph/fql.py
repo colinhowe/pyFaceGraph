@@ -4,8 +4,8 @@ import urllib2
 
 import bunch
 import simplejson as json
-from urlobject import URLObject
 from graph import GraphException
+from url_operations import add_path, update_query_params
 
 class FQL(object):
     
@@ -45,7 +45,7 @@ class FQL(object):
     
     """
     
-    ENDPOINT = URLObject.parse('https://api.facebook.com/method/')
+    ENDPOINT = 'https://api.facebook.com/method/'
     
     def __init__(self, access_token=None, err_handler=None):
         self.access_token = access_token
@@ -71,10 +71,10 @@ class FQL(object):
         
         """
         
-        url = self.ENDPOINT / 'fql.query'
+        url = add_path(self.ENDPOINT, 'fql.query')
         params.update(query=query, access_token=self.access_token,
                       format='json')
-        url |= params
+        url = update_query_params(url, params)
         
         return self.fetch_json(url)
     
@@ -100,10 +100,10 @@ class FQL(object):
         
         """
         
-        url = self.ENDPOINT / 'fql.multiquery'
+        url = add_path(self.ENDPOINT, 'fql.multiquery')
         params.update(queries=json.dumps(queries),
                       access_token=self.access_token, format='json')
-        url |= params
+        url = update_query_params(url, params)
         
         return self.fetch_json(url)
     
