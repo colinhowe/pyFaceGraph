@@ -17,7 +17,7 @@ class UrlOperationsTests(TestCase):
         self.assertEquals('a.com', ops.get_host('http://a.com/a/b'))
         self.assertEquals('a.com', ops.get_host('http://a.com/a?a=b'))
 
-    def testadd_path(self):
+    def test_add_path(self):
         url = u'http://a.com'
         self.assertEquals('http://a.com/', ops.add_path(url, ''))
         self.assertEquals('http://a.com/path', ops.add_path(url, 'path'))
@@ -184,5 +184,4 @@ class FQLTests(TestCase):
         self.fql.multi(['my_query1', 'my_query2'])
         url = mock_fetch.call_args[0][0]
         self.assertTrue(url.startswith('https://api.facebook.com/method/fql.multiquery?'))
-        print url
         self.assertTrue("&queries=%5B%22my_query1%22%2C+%22my_query2%22%5D" in url)
