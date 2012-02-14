@@ -115,8 +115,7 @@ class FQL(object):
                 code = response.get("error_code")
                 msg = response.get("error_msg")
                 args = response.get("request_args")
-                e = GraphException(code, msg, args=args)
-                raise e
+                raise GraphException(code, msg, args=args)
         return bunch.bunchify(response)
     
     @staticmethod

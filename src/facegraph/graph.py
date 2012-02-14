@@ -3,8 +3,6 @@
 import pprint
 import re
 import urllib
-import cgi
-import urlparse
 import urllib2 as default_urllib2
 import httplib as default_httplib
 
@@ -476,17 +474,19 @@ class GraphException(Exception):
         self.params = params
         self.graph = graph
         self.method = method
-        
+
     def __repr__(self):
         return str(self)
-    
+
     def __str__(self):
-        str = "%s, Node: %s" % (self.message, self.graph.url)
+        s = self.message
+        if self.graph:
+            s += "Node: %s" % self.graph.url
         if self.params:
-            str = "%s, Params: %s" % (str, self.params)
+            s += ", Params: %s" % self.params
         if self.code:
-            str =  "(#%s) %s" % (str, self.code)
-        return str
+            s +=  ", (%s)" % self.code
+        return s
 
 def indent(string, prefix='    '):
     """Indent each line of a string with a prefix (default is 4 spaces)."""
