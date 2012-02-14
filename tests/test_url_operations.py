@@ -157,6 +157,7 @@ class GraphUrlTests(TestCase):
         self.graph = self.graph.ids('a', 'b')
         self.assertEquals(expected, self.graph.url)
 
+
 class FQLTests(TestCase):
     def setUp(self):
         self.fql = FQL(access_token='abc123')
