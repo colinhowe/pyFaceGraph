@@ -1,6 +1,3 @@
-#from eventlet.green import urllib2
-#from eventlet.green import httplib
-
 import socket
 import simplejson
 from urllib import urlencode, unquote
@@ -46,10 +43,10 @@ class Api:
         return u".".join(self.stack)
     
     def __getitem__(self, name):
-        '''
+        """
         This method returns a new FB and allows us to chain attributes, e.g. fb.stream.publish
         A stack of attributes is maintained so that we can call the correct method later
-        '''
+        """
         s = []
         s.extend(self.stack)
         s.append(name)
@@ -57,15 +54,15 @@ class Api:
                               timeout=self.timeout, retries=self.retries, urllib2=self.urllib2, httplib=self.httplib)
     
     def __getattr__(self, name):
-        '''
+        """
         We trigger __getitem__ here so that both self.method.name and self['method']['name'] work
-        '''
+        """
         return self[name]
     
     def __call__(self, _retries=None, *args, **kwargs):
-        '''
+        """
         Executes an old REST api method using the stored method stack
-        '''
+        """
         _retries = _retries or self.retries
         
         if len(self.stack)>0:

@@ -8,7 +8,6 @@ import re
 from distribute_setup import use_setuptools; use_setuptools()
 from setuptools import setup, find_packages
 
-
 rel_file = lambda *args: os.path.join(os.path.dirname(os.path.abspath(__file__)), *args)
 cleanup = lambda lines: filter(None, map(lambda s: s.strip(), lines))
 
@@ -32,7 +31,6 @@ def get_extra_requirements():
         group = os.path.basename(req_filename).split('.', 1)[1]
         extras_require[group] = cleanup(read_from(req_filename).splitlines())
     return extras_require
-
 
 setup(
     name             = 'pyfacegraph',

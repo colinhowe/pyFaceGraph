@@ -1,5 +1,4 @@
 import urllib
-import cgi
 import urlparse
 
 def get_path(url):
@@ -32,7 +31,7 @@ def _query_param(key, value):
         value = value.decode('utf-8')
     else:
         value = unicode(value)
-    return (key, value.encode('utf-8'))
+    return key, value.encode('utf-8')
 
 def _make_query_tuples(params):
     if hasattr(params, 'items'):
@@ -56,9 +55,9 @@ def update_query_params(url, params, update=True):
     """
     scheme, host, path, query, fragment = urlparse.urlsplit(url)
 
-    # cgi.parse_qsl gives back url-decoded byte strings. Leave these as
+    # urlparse.parse_qsl gives back url-decoded byte strings. Leave these as
     # they are: they will be re-urlencoded below
-    query_bits = [(k, v) for k, v in cgi.parse_qsl(query)]
+    query_bits = [(k, v) for k, v in urlparse.parse_qsl(query)]
     if update:
         query_bits = dict(query_bits)
         query_bits.update(_make_query_tuples(params))
