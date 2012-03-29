@@ -143,7 +143,6 @@ class Graph(object):
     
     def copy(self, **update):
         """Copy this Graph, optionally overriding some attributes."""
-        
         return type(self)(access_token=self.access_token, 
                           err_handler=self.err_handler,
                           timeout=self.timeout,
@@ -168,18 +167,18 @@ class Graph(object):
     def __and__(self, params):
         return self.copy(url=add_query_params(self.url, params))
     
-    def __call__(self, **params):
+    def call_fb(self, **params):
         """Read the current URL, and JSON-decode the results."""
-        
+
         if self.access_token:
             params['access_token'] = self.access_token
         url = update_query_params(self.url, params)
         data = json.loads(self.fetch(url,
                                      timeout=self.timeout,
-                                     retries=self.retries, 
+                                     retries=self.retries,
                                      urllib2=self.urllib2,
                                      httplib=self.httplib))
-        return self.node(data, params)
+        return self.process_response(data, params)
 
     def __iter__(self):
         raise TypeError('%r object is not iterable' % self.__class__.__name__)
@@ -189,7 +188,6 @@ class Graph(object):
     
     def fields(self, *fields):
         """Shortcut for `?fields=x,y,z`."""
-        
         return self | ('fields', ','.join(fields))
     
     def ids(self, *ids):
@@ -197,8 +195,7 @@ class Graph(object):
         
         return self | ('ids', ','.join(map(str, ids)))
     
-    def node(self, data, params, method=None):
-
+    def process_response(self, data, params, method=None):
         if isinstance(data, dict):
             if data.get("error"):
                 code = data["error"].get("code")
@@ -220,7 +217,6 @@ class Graph(object):
         return data
     
     def post(self, **params):
-        
         """
         POST to this URL (with parameters); return the JSON-decoded result.
         
@@ -255,10 +251,9 @@ class Graph(object):
                             data=urllib.urlencode(params))
         
         data = json.loads(fetch())
-        return self.node(data, params, "post")
+        return self.process_response(data, params, "post")
     
     def post_file(self, file, **params):
-        
         if self.access_token:
             params['access_token'] = self.access_token
         params['file'] = file
@@ -266,11 +261,10 @@ class Graph(object):
         params['httplib'] = self.httplib
         data = json.loads(self.post_mime(self.url, **params))
         
-        return self.node(data, params, "post_file")
+        return self.process_response(data, params, "post_file")
     
     @staticmethod
     def post_mime(url, httplib=default_httplib, timeout=DEFAULT_TIMEOUT, retries=5, **kwargs):
-        
         body = []
         crlf = '\r\n'
         boundary = "graphBoundary"
