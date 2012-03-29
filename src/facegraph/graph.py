@@ -1,4 +1,5 @@
 # -*- coding: utf-8 -*-
+import logging
 import re
 import urllib
 import urllib2 as default_urllib2
@@ -15,6 +16,8 @@ p = "^\(#(\d+)\)"
 code_re = re.compile(p)
 
 __all__ = ['Graph']
+
+log = logging.getLogger('pyfacegraph')
 
 class Graph(object):
     
@@ -178,6 +181,10 @@ class Graph(object):
     
     def __and__(self, params):
         return self.copy(url=add_query_params(self.url, params))
+
+    def __call__(self, **params):
+        log.info('Calling deprecated facegraph.Graph magic call method!')
+        return self.call_fb(**params)
     
     def call_fb(self, **params):
         """Read the current URL, and JSON-decode the results."""
