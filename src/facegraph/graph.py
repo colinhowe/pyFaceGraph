@@ -160,7 +160,19 @@ class Graph(object):
     
     def __getattr__(self, attr):
         return self[attr]
-    
+
+    def update_url_params(self, params):
+        """
+            this used to overload the bitwise OR op
+        """
+        return self.copy(url=update_query_params(self.url, params))
+
+    def add_url_params(self, params):
+        """
+            this used to overload the bitwise AND op
+        """
+        return self.copy(url=add_query_params(self.url, params))
+
     def __or__(self, params):
         return self.copy(url=update_query_params(self.url, params))
     
