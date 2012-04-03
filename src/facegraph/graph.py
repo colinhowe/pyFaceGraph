@@ -183,7 +183,7 @@ class Graph(object):
         return self.copy(url=add_query_params(self.url, params))
 
     def __call__(self, **params):
-        log.info('Calling deprecated facegraph.Graph magic call method!')
+        log.debug('Calling deprecated facegraph.Graph magic call method!')
         return self.call_fb(**params)
     
     def call_fb(self, **params):
