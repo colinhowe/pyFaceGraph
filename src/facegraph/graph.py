@@ -185,7 +185,7 @@ class Graph(object):
 
     def __call__(self, **params):
         log.debug('Deprecated magic call!')
-        log.debug(repr(traceback.extract_stack()))
+        log.debug( traceback.print_stack())
         return self.call_fb(**params)
     
     def call_fb(self, **params):
