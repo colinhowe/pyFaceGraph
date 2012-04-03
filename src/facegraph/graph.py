@@ -165,23 +165,17 @@ class Graph(object):
     def __getattr__(self, attr):
         return self[attr]
 
-    def update_url_params(self, params):
+    def update_url_params(self, param, val):
         """
             this used to overload the bitwise OR op
         """
-        return self.copy(url=update_query_params(self.url, params))
+        return self.copy(url=update_query_params(self.url, (param, val)))
 
-    def add_url_params(self, params):
+    def add_url_params(self, param, val):
         """
             this used to overload the bitwise AND op
         """
-        return self.copy(url=add_query_params(self.url, params))
-
-    def __or__(self, params):
-        return self.copy(url=update_query_params(self.url, params))
-    
-    def __and__(self, params):
-        return self.copy(url=add_query_params(self.url, params))
+        return self.copy(url=add_query_params(self.url, (param, val)))
 
     def __call__(self, **params):
         log.debug('Deprecated magic call!')
