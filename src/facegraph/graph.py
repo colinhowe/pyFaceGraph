@@ -4,6 +4,7 @@ import re
 import urllib
 import urllib2 as default_urllib2
 import httplib as default_httplib
+import traceback
 
 from facegraph.url_operations import (add_path, get_host,
         add_query_params, update_query_params, get_path)
@@ -183,7 +184,8 @@ class Graph(object):
         return self.copy(url=add_query_params(self.url, params))
 
     def __call__(self, **params):
-        log.debug('Calling deprecated facegraph.Graph magic call method!')
+        log.debug('Deprecated magic call!')
+        log.debug(repr(traceback.extract_stack()))
         return self.call_fb(**params)
     
     def call_fb(self, **params):
