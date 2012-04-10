@@ -157,29 +157,28 @@ class Graph(object):
     
     def __getitem__(self, item):
         if isinstance(item, slice):
-            params = {'offset': item.start,
-                      'limit': item.stop - item.start}
-            return self.copy(url=add_query_params(self.url, params))
+            log.debug('Deprecated magic slice!')
+            log.debug( traceback.format_stack())
+            return self._range(item.start, item.stop)
         return self.copy(url=add_path(self.url, unicode(item)))
     
     def __getattr__(self, attr):
         return self[attr]
 
-    def update_url_params(self, param, val):
+    def _range(self, start, stop):
+        params = {'offset': start,
+                  'limit': stop - start}
+        return self.copy(url=add_query_params(self.url, params))
+
+    def with_url_params(self, param, val):
         """
             this used to overload the bitwise OR op
         """
         return self.copy(url=update_query_params(self.url, (param, val)))
 
-    def add_url_params(self, param, val):
-        """
-            this used to overload the bitwise AND op
-        """
-        return self.copy(url=add_query_params(self.url, (param, val)))
-
     def __call__(self, **params):
         log.debug('Deprecated magic call!')
-        log.debug( traceback.print_stack())
+        log.debug( traceback.format_stack())
         return self.call_fb(**params)
     
     def call_fb(self, **params):
