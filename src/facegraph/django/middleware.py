@@ -76,7 +76,7 @@ class FacebookCanvasMiddleware(object):
     
     def process_request(self, request):
         app_secret = self.app_secret(request)
-        raw_fbrequest = request.GET.get('signed_request', None)
+        raw_fbrequest = request.REQUEST.get('signed_request', None)
         if not (app_secret and raw_fbrequest):
             request.fbrequest = None
             return
