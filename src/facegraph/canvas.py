@@ -10,12 +10,13 @@ import simplejson as json
 import signature
 
 
-def b64url_decode(encoded):
-    """Decode a string encoded in URL-safe base64 without padding."""
-    
-    # The padding should round the length of the string up to a multiple of 4.
-    padding_fixed = encoded + (((4 - (len(encoded) % 4)) % 4) * '=')
-    return base64.urlsafe_b64decode(str(padding_fixed))
+def b64url_encode(data):
+    return base64.urlsafe_b64encode(data).rstrip('=')
+        
+def b64url_decode(data):
+    data = data.encode(u'ascii')
+    data += '=' * (4 - (len(data) % 4))
+    return base64.urlsafe_b64decode(data)
 
 
 def decode_signed_request(app_secret, signed_request):

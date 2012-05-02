@@ -405,7 +405,7 @@ class Node(bunch.Bunch):
     
         def user_location(user_id):
             user = graph[user_id]()
-            if 'location' in user:
+            if 'location' in user.keys():
                 return user.location
             return False
     
