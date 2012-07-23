@@ -3,7 +3,7 @@
 import urllib2
 
 import bunch
-import simplejson as json
+import ujson as json
 from graph import GraphException
 from url_operations import add_path, update_query_params
 

@@ -10,7 +10,7 @@ from facegraph.url_operations import (add_path, get_host,
         add_query_params, update_query_params, get_path)
 
 import bunch
-import simplejson as json
+import ujson as json
 from functools import partial
 
 p = "^\(#(\d+)\)"
