@@ -146,14 +146,6 @@ parameter:
     InvalidSignature
 
 
-## Django
-
-pyFaceGraph comes with basic support for building client applications in Django.
-At the moment, this consists of:
-
-*   Abstract class-based views for OAuth 2.0 authorization
-*   Abstract middleware to attach `Graph` instances to each request
-
 
 ### OAuth
 
