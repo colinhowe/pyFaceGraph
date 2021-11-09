@@ -150,7 +150,7 @@ parameter:
 ### OAuth
 
 pyFaceGraph defines two abstract class-based views (using [django-clsview][])
-and a mixin; these help your app obtain OAuth 2.0 acess tokens to access the
+and a mixin; these help your app obtain OAuth 2.0 access tokens to access the
 Graph API on behalf of a Facebook user.
 
   [django-clsview]: http://github.com/zacharyvoase/django-clsview
